@@ -19,7 +19,7 @@ const Nouveaute = ({
       <h4 className="text-base sm:text-lg font-bold mb-2 text-gray-800">{name}</h4>
       <p className="text-gray-600 mb-3 text-xs sm:text-sm">{description}</p>
       <img
-        src={"http://localhost:3000" + image}
+        src={"http://84.247.166.36:3002" + image}
         alt={name}
         className="w-full h-40 sm:h-48 md:h-56 object-cover transition-transform duration-300"
       />
@@ -65,7 +65,7 @@ const Nouveaute = ({
       >
         <div className="relative">
           <img
-            src={"http://localhost:3000" + image}
+            src={"http://84.247.166.36:3002" + image}
             alt={name}
             className="w-full h-40 sm:h-48 md:h-56 object-cover transition-transform duration-300"
           />

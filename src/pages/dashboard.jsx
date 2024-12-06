@@ -27,7 +27,7 @@ import {
 } from "@ant-design/icons";
 
 // API Base URL (replace with your actual backend URL)
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "http://84.247.166.36:3002";
 
 const ProductManagement = () => {
   // State management

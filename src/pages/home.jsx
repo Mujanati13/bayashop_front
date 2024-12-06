@@ -16,7 +16,7 @@ import Footer from "../components/footer";
 import DeliverySection from "../components/deliverySection";
 
 const DEFAULT_PRODUCT_IMAGE = "/default-product.jpg";
-const API_BASE_URL = "http://localhost:3000"; // Replace with your actual API base URL
+const API_BASE_URL = "http://84.247.166.36:3002"; // Replace with your actual API base URL
 
 const PageAccueilBayaShop = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -105,7 +105,7 @@ const PageAccueilBayaShop = () => {
             onClick={openSearchModal}
           >
             <img
-              src={"http://localhost:3000" + item.image}
+              src={"http://84.247.166.36:3002" + item.image}
               alt={item.name}
               className="w-12 h-12 object-cover mr-4 rounded"
             />
