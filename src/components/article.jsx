@@ -44,12 +44,12 @@ const Article = ({
 
       <div className="border-t pt-3 mt-3">
         <div className="flex justify-between items-center mb-1">
-          <span className="text-xs sm:text-sm text-gray-600">Availability:</span>
-          <span className="text-green-600 font-semibold text-xs sm:text-sm">In Stock</span>
+          <span className="text-xs sm:text-sm text-gray-600">Disponibilité :</span>
+          <span className="text-green-600 font-semibold text-xs sm:text-sm">En stock</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-xs sm:text-sm text-gray-600">Shipping:</span>
-          <span className="text-gray-800 text-xs sm:text-sm">Free</span>
+          <span className="text-xs sm:text-sm text-gray-600">Livraison :</span>
+          <span className="text-gray-800 text-xs sm:text-sm">Gratuite</span>
         </div>
       </div>
     </div>

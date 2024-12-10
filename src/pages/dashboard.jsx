@@ -45,10 +45,34 @@ const ProductManagement = () => {
   const [isProductDetailsModalVisible, setIsProductDetailsModalVisible] =
     useState(false);
   const [selectedProductDetails, setSelectedProductDetails] = useState(null);
+  const [categoryFileList, setCategoryFileList] = useState([]);
 
   const showProductDetails = (record) => {
     setSelectedProductDetails(record);
     setIsProductDetailsModalVisible(true);
+  };
+
+  const handleCategoryImageUpload = async (options) => {
+    const { file } = options;
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/articles/upload`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      message.success("Image uploaded successfully");
+      return response.data;
+    } catch (error) {
+      message.error("Image upload failed");
+      console.error(error);
+      throw error;
+    }
   };
 
   // Render Product Details Modal
@@ -539,15 +563,34 @@ const ProductManagement = () => {
         setIsCategoryModalVisible(false);
         setCurrentCategory(null);
         categoryForm.resetFields();
+        setCategoryFileList([]); // Reset file list
       }}
       onOk={() => {
-        categoryForm.resetFields();
         categoryForm
           .validateFields()
-          .then((values) => {
+          .then(async (values) => {
+            // Handle image upload if a file exists
+            let imageUrl = null;
+            if (categoryFileList.length > 0) {
+              const uploadResponse = await handleCategoryImageUpload({
+                file: categoryFileList[0],
+              });
+              imageUrl = uploadResponse.imageUrl;
+            }
+
+            const categoryData = {
+              ...values,
+              Photo: imageUrl || currentCategory?.Photo,
+              ID_CAT: currentCategory?.ID_CAT,
+            };
+
+            // If the category exists, update it; otherwise, create a new category
             currentCategory
-              ? updateCategory({ ...currentCategory, ...values })
-              : createCategory(values);
+              ? updateCategory(categoryData)
+              : createCategory(categoryData);
+
+            // Reset the file list
+            setCategoryFileList([]);
           })
           .catch((error) => {
             console.error("Validation Failed:", error);
@@ -559,6 +602,32 @@ const ProductManagement = () => {
         layout="vertical"
         initialValues={currentCategory || {}}
       >
+        {/* Add image upload for category */}
+        <Form.Item name="ImageUrl" label="Catégorie Image">
+          <Upload
+            listType="picture-card"
+            fileList={categoryFileList}
+            onRemove={(file) => {
+              const index = categoryFileList.indexOf(file);
+              const newFileList = categoryFileList.slice();
+              newFileList.splice(index, 1);
+              setCategoryFileList(newFileList);
+            }}
+            beforeUpload={(file) => {
+              setCategoryFileList([...categoryFileList, file]);
+              return false;
+            }}
+            accept="image/*"
+          >
+            {categoryFileList.length >= 1 ? null : (
+              <div>
+                <PlusOutlined />
+                <div style={{ marginTop: 8 }}>Upload</div>
+              </div>
+            )}
+          </Upload>
+        </Form.Item>
+
         <Form.Item
           name="Nom"
           label="Nom de la Catégorie"

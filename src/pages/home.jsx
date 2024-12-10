@@ -188,7 +188,7 @@ const PageAccueilBayaShop = () => {
             <div
               className="bg-gray-200 rounded-full w-40 h-40 bg-cover bg-center"
               style={{
-                backgroundImage: `url(${DEFAULT_PRODUCT_IMAGE})`,
+                backgroundImage: `url(http://84.247.166.36:3002${category.img})`,
               }}
             ></div>
             <div className="mt-2 text-sm">{category.Nom}</div>
