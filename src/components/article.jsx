@@ -79,7 +79,7 @@ const Article = ({
           />
           {(status || discountPercentage > 0) && (
             <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-green-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium shadow-md">
-              {status || `${discountPercentage}% OFF`}
+              {status || `-${discountPercentage}%`}
             </div>
           )}
         </div>
