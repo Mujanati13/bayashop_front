@@ -17,7 +17,7 @@ import Nouveaute from "../components/nouveaute";
 import Footer from "../components/footer";
 import DeliverySection from "../components/deliverySection";
 import Carousel from "react-multi-carousel";
-import 'react-multi-carousel/lib/styles.css';
+import "react-multi-carousel/lib/styles.css";
 const DEFAULT_PRODUCT_IMAGE = "/default-product.jpg";
 const API_BASE_URL = "http://84.247.166.36:3002"; // Replace with your actual API base URL
 
@@ -181,6 +181,27 @@ const PageAccueilBayaShop = () => {
     </div>
   );
 
+  const CustomLeftArrow = ({ onClick }) => (
+    <LeftOutlined
+      onClick={onClick}
+      className="absolute left-0 top-1/2 bg-blue-100 transform -translate-y-1/2  rounded-full p-2  z-10"
+      aria-label="Previous Slide"
+    >
+      ←
+    </LeftOutlined>
+  );
+
+  // Custom Right Arrow
+  const CustomRightArrow = ({ onClick }) => (
+    <RightOutlined
+      onClick={onClick}
+      className="absolute right-0 top-1/2 bg-blue-100 transform -translate-y-1/2  rounded-full p-2  z-10"
+      aria-label="Next Slide"
+    >
+      →
+    </RightOutlined>
+  );
+
   // Existing sections (CategoriesSection, PromotionsSection, NewProductsSection)
   const CategoriesSection = () => (
     <div className="mt-5 p-5 text-lg font-semibold text-center">
@@ -200,10 +221,10 @@ const PageAccueilBayaShop = () => {
             items: 1,
           },
         }}
-        LeftOutlined={<LeftOutlined />}
-        RightOutlined={<RightOutlined />}
-        infinite={true}
-        autoPlay={true}
+        customLeftArrow={<CustomLeftArrow />}
+        customRightArrow={<CustomRightArrow />}
+        infinite={false}
+        autoPlay={false}
         autoPlaySpeed={3000}
         keyBoardControl={true}
         customTransition="all .5"
@@ -214,8 +235,8 @@ const PageAccueilBayaShop = () => {
         itemClass="carousel-item-padding-40-px"
       >
         {categories.map((category) => (
-          <div 
-            key={category.ID_CAT} 
+          <div
+            key={category.ID_CAT}
             className="flex flex-col items-center justify-center p-4"
           >
             <div
@@ -230,8 +251,6 @@ const PageAccueilBayaShop = () => {
       </Carousel>
     </div>
   );
-
-  
 
   const PromotionsSection = () => {
     const responsive = {
@@ -248,7 +267,7 @@ const PageAccueilBayaShop = () => {
         items: 1,
       },
     };
-  
+
     return (
       <div className="mt-5 p-5 text-lg font-semibold text-center">
         <div>Promotions</div>
@@ -259,6 +278,8 @@ const PageAccueilBayaShop = () => {
           autoPlaySpeed={3000}
           keyBoardControl={true}
           customTransition="all .5"
+          customLeftArrow={<CustomLeftArrow />}
+          customRightArrow={<CustomRightArrow />}
           transitionDuration={500}
           containerClass="carousel-container"
           removeArrowOnDeviceType={["tablet", "mobile"]}
@@ -266,23 +287,22 @@ const PageAccueilBayaShop = () => {
           itemClass="carousel-item-padding-40-px"
           className=""
         >
-          {articles.map((article) => (
-           <div className="p-3">
-             <Article
-              key={article.ID_ART}
-              name={article.Nom}
-              Oldprice={article.AncienPrix || article.Prix}
-              newPrice={article.Prix}
-              image={article.Photo || DEFAULT_PRODUCT_IMAGE}
-            />
-           </div>
-          ))}
+          {articles
+            .filter((article) => article.Promotion == true)
+            .map((article) => (
+              <div className="p-3" key={article.ID_ART}>
+                <Article
+                  name={article.Nom}
+                  Oldprice={article.AncienPrix || article.Prix}
+                  newPrice={article.Prix}
+                  image={article.Photo || DEFAULT_PRODUCT_IMAGE}
+                />
+              </div>
+            ))}
         </Carousel>
       </div>
     );
   };
-
- 
 
   const NewProductsSection = () => {
     const responsive = {
@@ -299,11 +319,11 @@ const PageAccueilBayaShop = () => {
         items: 1,
       },
     };
-  
+
     const newProducts = articles.filter(
       (article) => article.Quantite > 0 && !article.Promotion
     );
-  
+
     return (
       <div className="mt-5 p-5 text-lg font-semibold text-center">
         <div>Nouveautés</div>
@@ -312,6 +332,8 @@ const PageAccueilBayaShop = () => {
           infinite={false}
           autoPlay={false}
           autoPlaySpeed={3000}
+          customLeftArrow={<CustomLeftArrow />}
+          customRightArrow={<CustomRightArrow />}
           keyBoardControl={true}
           customTransition="all .5"
           transitionDuration={500}
@@ -321,16 +343,16 @@ const PageAccueilBayaShop = () => {
           itemClass="carousel-item-padding-40-px"
         >
           {newProducts.map((product) => (
-           <div className="p-3">
-             <Nouveaute
-              key={product.ID_ART}
-              name={product.Nom}
-              oldPrice={product.Prix}
-              newPrice={product.Prix}
-              status={product.Quantite <= 10}
-              image={product.Photo || DEFAULT_PRODUCT_IMAGE}
-            />
-           </div>
+            <div className="p-3">
+              <Nouveaute
+                key={product.ID_ART}
+                name={product.Nom}
+                oldPrice={product.Prix}
+                newPrice={product.Prix}
+                status={product.Quantite <= 10}
+                image={product.Photo || DEFAULT_PRODUCT_IMAGE}
+              />
+            </div>
           ))}
         </Carousel>
       </div>

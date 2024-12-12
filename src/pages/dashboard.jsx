@@ -503,6 +503,19 @@ const ProductManagement = () => {
                 label="Prix Avant Promotion"
                 rules={[
                   { required: true, message: "Prix avant promotion requis" },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      const currentPrice = getFieldValue("Prix");
+                      if (value && value === currentPrice) {
+                        return Promise.reject(
+                          new Error(
+                            "Le prix promotionnel doit être différent du prix actuel"
+                          )
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  }),
                 ]}
               >
                 <Input type="number" step="0.01" />
