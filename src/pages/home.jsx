@@ -184,7 +184,7 @@ const PageAccueilBayaShop = () => {
   const CustomLeftArrow = ({ onClick }) => (
     <LeftOutlined
       onClick={onClick}
-      className="absolute left-0 top-1/2 bg-blue-100 transform -translate-y-1/2  rounded-full p-2  z-10"
+      className="absolute left-0 top-1/2 bg-blue-100 transform -translate-y-1/2  rounded-full p-2 "
       aria-label="Previous Slide"
     >
       ←
@@ -195,7 +195,7 @@ const PageAccueilBayaShop = () => {
   const CustomRightArrow = ({ onClick }) => (
     <RightOutlined
       onClick={onClick}
-      className="absolute right-0 top-1/2 bg-blue-100 transform -translate-y-1/2  rounded-full p-2  z-10"
+      className="absolute right-0 top-1/2 bg-blue-100 transform -translate-y-1/2  rounded-full p-2 "
       aria-label="Next Slide"
     >
       →
