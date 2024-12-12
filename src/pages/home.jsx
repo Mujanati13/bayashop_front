@@ -6,6 +6,8 @@ import {
   TruckOutlined,
   MenuOutlined,
   CloseOutlined,
+  LeftOutlined,
+  RightOutlined,
 } from "@ant-design/icons";
 import { Input, Popover, Modal } from "antd";
 import axios from "axios";
@@ -14,7 +16,8 @@ import ImageCarousel from "../components/image";
 import Nouveaute from "../components/nouveaute";
 import Footer from "../components/footer";
 import DeliverySection from "../components/deliverySection";
-
+import Carousel from "react-multi-carousel";
+import 'react-multi-carousel/lib/styles.css';
 const DEFAULT_PRODUCT_IMAGE = "/default-product.jpg";
 const API_BASE_URL = "http://84.247.166.36:3002"; // Replace with your actual API base URL
 
@@ -182,62 +185,144 @@ const PageAccueilBayaShop = () => {
   const CategoriesSection = () => (
     <div className="mt-5 p-5 text-lg font-semibold text-center">
       <div>Catégories</div>
-      <div className="flex justify-between items-center mt-5 flex-wrap">
+      <Carousel
+        responsive={{
+          desktop: {
+            breakpoint: { max: 3000, min: 1024 },
+            items: 5,
+          },
+          tablet: {
+            breakpoint: { max: 1024, min: 464 },
+            items: 3,
+          },
+          mobile: {
+            breakpoint: { max: 464, min: 0 },
+            items: 1,
+          },
+        }}
+        LeftOutlined={<LeftOutlined />}
+        RightOutlined={<RightOutlined />}
+        infinite={true}
+        autoPlay={true}
+        autoPlaySpeed={3000}
+        keyBoardControl={true}
+        customTransition="all .5"
+        transitionDuration={500}
+        containerClass="carousel-container"
+        removeArrowOnDeviceType={["tablet", "mobile"]}
+        dotListClass="custom-dot-list-style"
+        itemClass="carousel-item-padding-40-px"
+      >
         {categories.map((category) => (
-          <div key={category.ID_CAT} className="mb-4">
+          <div 
+            key={category.ID_CAT} 
+            className="flex flex-col items-center justify-center p-4"
+          >
             <div
-              className="bg-gray-200 rounded-full w-40 h-40 bg-cover bg-center"
+              className="bg-gray-200 rounded-full w-40 h-40 bg-cover bg-center mb-2"
               style={{
                 backgroundImage: `url(http://84.247.166.36:3002${category.img})`,
               }}
             ></div>
-            <div className="mt-2 text-sm">{category.Nom}</div>
+            <div className="text-sm font-normal">{category.Nom}</div>
           </div>
         ))}
-      </div>
+      </Carousel>
     </div>
   );
 
-  const PromotionsSection = () => {
-    const promotedArticles = articles.filter(
-      (article) => article.Promotion > 0
-    );
+  
 
+  const PromotionsSection = () => {
+    const responsive = {
+      desktop: {
+        breakpoint: { max: 3000, min: 1024 },
+        items: 5,
+      },
+      tablet: {
+        breakpoint: { max: 1024, min: 464 },
+        items: 3,
+      },
+      mobile: {
+        breakpoint: { max: 464, min: 0 },
+        items: 1,
+      },
+    };
+  
     return (
       <div className="mt-5 p-5 text-lg font-semibold text-center">
         <div>Promotions</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-5">
-          {promotedArticles.map((article) => (
-            <Popover
+        <Carousel
+          responsive={responsive}
+          infinite={false}
+          autoPlay={false}
+          autoPlaySpeed={3000}
+          keyBoardControl={true}
+          customTransition="all .5"
+          transitionDuration={500}
+          containerClass="carousel-container"
+          removeArrowOnDeviceType={["tablet", "mobile"]}
+          dotListClass="custom-dot-list-style"
+          itemClass="carousel-item-padding-40-px"
+          className=""
+        >
+          {articles.map((article) => (
+           <div className="p-3">
+             <Article
               key={article.ID_ART}
-              content={<div>Hello world</div>}
-              title="Title"
-              trigger="click"
-            >
-              <Article
-                name={article.Nom}
-                Oldprice={article.AncienPrix || article.Prix}
-                newPrice={article.Prix}
-                image={article.Photo || DEFAULT_PRODUCT_IMAGE}
-              />
-            </Popover>
+              name={article.Nom}
+              Oldprice={article.AncienPrix || article.Prix}
+              newPrice={article.Prix}
+              image={article.Photo || DEFAULT_PRODUCT_IMAGE}
+            />
+           </div>
           ))}
-        </div>
+        </Carousel>
       </div>
     );
   };
 
+ 
+
   const NewProductsSection = () => {
+    const responsive = {
+      desktop: {
+        breakpoint: { max: 3000, min: 1024 },
+        items: 5,
+      },
+      tablet: {
+        breakpoint: { max: 1024, min: 464 },
+        items: 3,
+      },
+      mobile: {
+        breakpoint: { max: 464, min: 0 },
+        items: 1,
+      },
+    };
+  
     const newProducts = articles.filter(
       (article) => article.Quantite > 0 && !article.Promotion
     );
-
+  
     return (
       <div className="mt-5 p-5 text-lg font-semibold text-center">
         <div>Nouveautés</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-5">
+        <Carousel
+          responsive={responsive}
+          infinite={false}
+          autoPlay={false}
+          autoPlaySpeed={3000}
+          keyBoardControl={true}
+          customTransition="all .5"
+          transitionDuration={500}
+          containerClass="carousel-container"
+          removeArrowOnDeviceType={["tablet", "mobile"]}
+          dotListClass="custom-dot-list-style"
+          itemClass="carousel-item-padding-40-px"
+        >
           {newProducts.map((product) => (
-            <Nouveaute
+           <div className="p-3">
+             <Nouveaute
               key={product.ID_ART}
               name={product.Nom}
               oldPrice={product.Prix}
@@ -245,8 +330,9 @@ const PageAccueilBayaShop = () => {
               status={product.Quantite <= 10}
               image={product.Photo || DEFAULT_PRODUCT_IMAGE}
             />
+           </div>
           ))}
-        </div>
+        </Carousel>
       </div>
     );
   };
