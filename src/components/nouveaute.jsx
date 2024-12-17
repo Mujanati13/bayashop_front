@@ -19,7 +19,7 @@ const Nouveaute = ({
       <h4 className="text-base sm:text-lg font-bold mb-2 text-gray-800">{name}</h4>
       <p className="text-gray-600 mb-3 text-xs sm:text-sm">{description}</p>
       <img
-        src={"http://http://51.38.99.75:4004" + image}
+        src={"http://51.38.99.75:4004" + image}
         alt={name}
         className="w-full h-40 sm:h-48 md:h-56 object-cover transition-transform duration-300"
       />
