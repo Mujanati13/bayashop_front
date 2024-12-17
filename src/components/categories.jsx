@@ -145,7 +145,7 @@ const CategoriesSection = ({ categories, onCategorySelect }) => {
                 mb-2
               "
               style={{
-                backgroundImage: `url(http://84.247.166.36:3002${category.img})`,
+                backgroundImage: `url(http://http://51.38.99.75:4004${category.img})`,
               }}
             ></div>
             <div className="

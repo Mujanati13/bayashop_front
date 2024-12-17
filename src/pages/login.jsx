@@ -9,7 +9,7 @@ const LoginPage = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://84.247.166.36:3002/admin/login', { email, password });
+      const response = await axios.post('http://51.38.99.75:4004/admin/login', { email, password });
       localStorage.setItem('token', response.data.token);
       // Redirect the user to the dashboard or another protected route
       window.location.href = "/admin";

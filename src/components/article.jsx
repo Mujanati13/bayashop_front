@@ -30,7 +30,7 @@ const Article = ({
 
       <div className="flex items-center mb-3">
         <img
-          src={"http://84.247.166.36:3002" + image}
+          src={"http://http://51.38.99.75:4004/" + image}
           alt={name}
           className="w-full h-40 sm:h-48 md:h-56 object-cover transition-transform duration-300"
         />
@@ -73,7 +73,7 @@ const Article = ({
       >
         <div className="relative">
           <img
-            src={"http://84.247.166.36:3002" + image}
+            src={"http://http://51.38.99.75:4004/" + image}
             alt={name}
             className="w-full h-40 sm:h-48 md:h-56 object-cover transition-transform duration-300"
           />

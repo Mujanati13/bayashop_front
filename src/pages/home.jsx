@@ -19,7 +19,7 @@ import DeliverySection from "../components/deliverySection";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
 const DEFAULT_PRODUCT_IMAGE = "/default-product.jpg";
-const API_BASE_URL = "http://84.247.166.36:3002"; // Replace with your actual API base URL
+const API_BASE_URL = "http://51.38.99.75:4004"; // Replace with your actual API base URL
 
 const PageAccueilBayaShop = () => {
   const [isScrolled, setIsScrolled] = useState(false);
