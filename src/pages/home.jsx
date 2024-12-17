@@ -108,7 +108,7 @@ const PageAccueilBayaShop = () => {
             onClick={openSearchModal}
           >
             <img
-              src={"http://84.247.166.36:3002" + item.image}
+              src={"http://51.38.99.75:4004" + item.image}
               alt={item.name}
               className="w-12 h-12 object-cover mr-4 rounded"
             />
@@ -242,7 +242,7 @@ const PageAccueilBayaShop = () => {
             <div
               className="bg-gray-200 rounded-full w-40 h-40 bg-cover bg-center mb-2"
               style={{
-                backgroundImage: `url(http://84.247.166.36:3002${category.img})`,
+                backgroundImage: `url(http://51.38.99.75:4004${category.img})`,
               }}
             ></div>
             <div className="text-sm font-normal">{category.Nom}</div>

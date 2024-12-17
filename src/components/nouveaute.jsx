@@ -65,7 +65,7 @@ const Nouveaute = ({
       >
         <div className="relative">
           <img
-            src={"http://http://51.38.99.75:4004" + image}
+            src={"http://51.38.99.75:4004" + image}
             alt={name}
             className="w-full h-40 sm:h-48 md:h-56 object-cover transition-transform duration-300"
           />
