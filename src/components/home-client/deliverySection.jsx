@@ -1,8 +1,8 @@
 import React from 'react';
-import CardPaymentIcon from '../../src/assets/Card Payment.svg';
-import TruckIcon from '../../src/assets/Truck.svg';
-import HalalSignIcon from '../../src/assets/Halal_Sign.svg';
-import MapIcon from '../../src/assets/Map.svg';
+import CardPaymentIcon from '../../../src/assets/Card Payment.svg';
+import TruckIcon from '../../../src/assets/Truck.svg';
+import HalalSignIcon from '../../../src/assets/Halal_Sign.svg';
+import MapIcon from '../../../src/assets/Map.svg';
 
 const DeliverySection = () => {
   return (

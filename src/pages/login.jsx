@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Tag } from 'antd';
+import { Endpoint } from '../helper/enpoint';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -9,7 +10,7 @@ const LoginPage = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://51.38.99.75:4004/admin/login', { email, password });
+      const response = await axios.post(Endpoint()+'/admin/login', { email, password });
       localStorage.setItem('token', response.data.token);
       // Redirect the user to the dashboard or another protected route
       window.location.href = "/admin";

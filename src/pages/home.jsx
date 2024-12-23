@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useCallback } from "react";
 import {
   ShoppingCartOutlined,
   UserOutlined,
@@ -9,31 +9,45 @@ import {
   LeftOutlined,
   RightOutlined,
 } from "@ant-design/icons";
-import { Input, Popover, Modal } from "antd";
+import { Input, Popover, Modal, Badge } from "antd";
 import axios from "axios";
-import Article from "../components/article";
-import ImageCarousel from "../components/image";
-import Nouveaute from "../components/nouveaute";
-import Footer from "../components/footer";
-import DeliverySection from "../components/deliverySection";
+import Article from "../components/home-client/article";
+import ImageCarousel from "../components/home-client/image";
+import Nouveaute from "../components/home-client/nouveaute";
+import Footer from "../components/home-client/footer";
+import DeliverySection from "../components/home-client/deliverySection";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
+import { Endpoint } from "../helper/enpoint";
+import CartModal from "../components/home-client/CartModal";
+import { CartProvider } from "../components/home-client/cartReducer";
 const DEFAULT_PRODUCT_IMAGE = "/default-product.jpg";
-const API_BASE_URL = "http://51.38.99.75:4004"; // Replace with your actual API base URL
+import { useCart } from "../components/home-client/cartReducer";
 
-const PageAccueilBayaShop = () => {
+const API_BASE_URL = Endpoint(); // Replace with your actual API base URL
+
+const PageHome = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isCartModalVisible, setIsCartModalVisible] = useState(false);
+  const [counter, setCounter] = useState(0);
 
   // Search-related states
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
+  const {
+    cart,
+  } = useCart();
+
+  const toggleCartModal = () => {
+    setIsCartModalVisible(!isCartModalVisible);
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,6 +80,32 @@ const PageAccueilBayaShop = () => {
     fetchData();
   }, []);
 
+  // Fix 1: Simplified useEffect with correct dependencies
+  useEffect(() => {
+    const itemCount = cart.items.reduce(
+      (total, item) => total + item.quantity,
+      0
+    );
+    setCounter(itemCount);
+  }, [cart.items]); // Only depend on cart.items
+
+  // Fix 2: Alternative approach using cart state
+  useEffect(() => {
+    const itemCount = cart.items.reduce(
+      (total, item) => total + item.quantity,
+      0
+    );
+    setCounter(itemCount);
+  }, [cart]); // Depend on the entire cart state if needed
+
+  // Fix 3: Most robust approach with memoized calculation
+  const calculateTotalItems = useCallback((items) => {
+    return items.reduce((total, item) => total + item.quantity, 0);
+  }, []);
+
+  useEffect(() => {
+    setCounter(calculateTotalItems(cart.items));
+  }, [cart.items, calculateTotalItems]);
   // Search functionality
   const handleSearch = (value) => {
     setSearchQuery(value);
@@ -108,7 +148,7 @@ const PageAccueilBayaShop = () => {
             onClick={openSearchModal}
           >
             <img
-              src={"http://51.38.99.75:4004" + item.image}
+              src={Endpoint() + item.image}
               alt={item.name}
               className="w-12 h-12 object-cover mr-4 rounded"
             />
@@ -242,7 +282,7 @@ const PageAccueilBayaShop = () => {
             <div
               className="bg-gray-200 rounded-full w-40 h-40 bg-cover bg-center mb-2"
               style={{
-                backgroundImage: `url(http://51.38.99.75:4004${category.img})`,
+                backgroundImage: `url(${Endpoint()}${category.img})`,
               }}
             ></div>
             <div className="text-sm font-normal">{category.Nom}</div>
@@ -325,37 +365,38 @@ const PageAccueilBayaShop = () => {
     );
 
     return (
-      <div className="mt-5 p-5 text-lg font-semibold text-center">
-        <div>Nouveautés</div>
-        <Carousel
-          responsive={responsive}
-          infinite={false}
-          autoPlay={false}
-          autoPlaySpeed={3000}
-          customLeftArrow={<CustomLeftArrow />}
-          customRightArrow={<CustomRightArrow />}
-          keyBoardControl={true}
-          customTransition="all .5"
-          transitionDuration={500}
-          containerClass="carousel-container"
-          removeArrowOnDeviceType={["tablet", "mobile"]}
-          dotListClass="custom-dot-list-style"
-          itemClass="carousel-item-padding-40-px"
-        >
-          {newProducts.map((product) => (
-            <div className="p-3">
-              <Nouveaute
-                key={product.ID_ART}
-                name={product.Nom}
-                oldPrice={product.Prix}
-                newPrice={product.Prix}
-                status={product.Quantite <= 10}
-                image={product.Photo || DEFAULT_PRODUCT_IMAGE}
-              />
-            </div>
-          ))}
-        </Carousel>
-      </div>
+        <div className="mt-5 p-5 text-lg font-semibold text-center">
+          <div>Nouveautés</div>
+          <Carousel
+            responsive={responsive}
+            infinite={false}
+            autoPlay={false}
+            autoPlaySpeed={3000}
+            customLeftArrow={<CustomLeftArrow />}
+            customRightArrow={<CustomRightArrow />}
+            keyBoardControl={true}
+            customTransition="all .5"
+            transitionDuration={500}
+            containerClass="carousel-container"
+            removeArrowOnDeviceType={["tablet", "mobile"]}
+            dotListClass="custom-dot-list-style"
+            itemClass="carousel-item-padding-40-px"
+          >
+            {newProducts.map((product) => (
+              <div className="p-3">
+                <Nouveaute
+                  key={product.ID_ART}
+                  id={product.ID_ART}
+                  name={product.Nom}
+                  oldPrice={product.Prix}
+                  newPrice={product.Prix}
+                  status={product.Quantite <= 10}
+                  image={product.Photo || DEFAULT_PRODUCT_IMAGE}
+                />
+              </div>
+            ))}
+          </Carousel>
+        </div>
     );
   };
 
@@ -363,124 +404,142 @@ const PageAccueilBayaShop = () => {
   if (error) return <div>Erreur de chargement</div>;
 
   return (
-    <div className="flex flex-col">
-      {/* Mobile Overlay when Side Menu is Open */}
-      {isSideMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          onClick={toggleSideMenu}
+      <div className="flex flex-col">
+        {/* Cart Modal */}
+        <CartModal
+          visible={isCartModalVisible}
+          onClose={() => setIsCartModalVisible(false)}
         />
-      )}
 
-      {/* Side Menu Component */}
-      <SideMenu />
+        {/* Mobile Overlay when Side Menu is Open */}
+        {isSideMenuOpen && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            onClick={toggleSideMenu}
+          />
+        )}
 
-      {/* Search Results Modal */}
-      <SearchResultsModal />
+        {/* Side Menu Component */}
+        <SideMenu />
 
-      {/* En-tête */}
-      {!isScrolled && (
-        <div className="bg-green-500 py-2 text-white text-center">
-          <p className="font-medium">Livraison gratuite à partir de 99€</p>
-        </div>
-      )}
+        {/* Search Results Modal */}
+        <SearchResultsModal />
 
-      <header
-        className={`bg-gray-800 py-4 text-white p-5 ${
-          isScrolled ? "fixed top-0 w-full z-10" : ""
-        }`}
-      >
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-3xl font-bold">
-              <span className="text-blue-300">Baya</span> Shop
-            </h1>
+        {/* En-tête */}
+        {!isScrolled && (
+          <div className="bg-green-500 py-2 text-white text-center">
+            <p className="font-medium">Livraison gratuite à partir de 99€</p>
           </div>
+        )}
 
-          {/* Mobile Navigation Icons */}
-          <div className="flex items-center space-x-4 md:hidden">
-            <Popover
-              content={<SearchSuggestions />}
-              trigger="click"
-              placement="bottomRight"
-            >
-              <SearchOutlined
-                className="text-xl cursor-pointer"
-                onClick={() => {}}
-              />
-            </Popover>
-            <MenuOutlined
-              className="text-xl cursor-pointer"
-              onClick={toggleSideMenu}
-            />
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Popover
-              content={<SearchSuggestions />}
-              trigger="click"
-              placement="bottomRight"
-            >
-              <Input.Search
-                placeholder="Rechercher"
-                allowClear
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                onSearch={openSearchModal}
-                style={{ width: 500 }}
-                prefix={<SearchOutlined />}
-              />
-            </Popover>
+        <header
+          className={`bg-gray-800 py-4 text-white p-5 ${
+            isScrolled ? "fixed top-0 w-full z-10" : ""
+          }`}
+        >
+          <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
-              <ShoppingCartOutlined className="text-xl" />
-              <UserOutlined className="text-xl" />
-              <TruckOutlined className="text-xl" />
+              <h1 className="text-3xl font-bold">
+                <span className="text-blue-300">Baya</span> Shop
+              </h1>
+            </div>
+
+            {/* Mobile Navigation Icons */}
+            <div className="flex items-center space-x-4 md:hidden">
+              <Popover
+                content={<SearchSuggestions />}
+                trigger="click"
+                placement="bottomRight"
+              >
+                <SearchOutlined
+                  className="text-xl cursor-pointer"
+                  onClick={() => {}}
+                />
+              </Popover>
+              <MenuOutlined
+                className="text-xl cursor-pointer"
+                onClick={toggleSideMenu}
+              />
+            </div>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-4">
+              <Popover
+                content={<SearchSuggestions />}
+                trigger="click"
+                placement="bottomRight"
+              >
+                <Input.Search
+                  placeholder="Rechercher"
+                  allowClear
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  onSearch={openSearchModal}
+                  style={{ width: 500 }}
+                  prefix={<SearchOutlined />}
+                />
+              </Popover>
+              <div className="flex items-center space-x-4">
+                <Badge count={counter} size="small">
+                  <ShoppingCartOutlined
+                    className="text-xl cursor-pointer text-white"
+                    onClick={toggleCartModal}
+                  />
+                </Badge>
+                <UserOutlined className="text-xl" />
+                <TruckOutlined className="text-xl" />
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* Rest of the existing code remains the same */}
-      {/* Desktop Navigation */}
-      <nav className="bg-white border-b border-gray-200 py-4 mt-0 hidden md:block">
-        <ul className="flex justify-center space-x-30 sm:space-x-20">
-          <li>
-            <a href="#" className="text-blue-500 hover:text-blue-700">
-              Promotions
-            </a>
-          </li>
-          {/* ... other navigation items ... */}
-        </ul>
-      </nav>
+        {/* Desktop Navigation */}
+        <nav className="bg-white border-b border-gray-200 py-4 mt-0 hidden md:block">
+          <ul className="flex justify-center space-x-30 sm:space-x-20">
+            <li>
+              <a href="#" className="text-blue-500 hover:text-blue-700">
+                Promotions
+              </a>
+            </li>
+            {/* ... other navigation items ... */}
+          </ul>
+        </nav>
 
-      {/* Rest of the content */}
-      <div className="flex flex-col-reverse md:flex-row items-center justify-between p-4 mt-0 container mx-auto px-4">
-        <div className="w-full md:w-[35%] mt-4 md:mt-0 text-center md:text-left">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            Les plats préparés sont prêts !
-          </h2>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
-            Voir la collection
-          </button>
+        {/* Rest of the content */}
+        <div className="flex flex-col-reverse md:flex-row items-center justify-between p-4 mt-0 container mx-auto px-4">
+          <div className="w-full md:w-[35%] mt-4 md:mt-0 text-center md:text-left">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              Les plats préparés sont prêts !
+            </h2>
+            <button className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
+              Voir la collection
+            </button>
+          </div>
+          <div className="w-full md:w-[65%] mb-4 md:mb-0">
+            <ImageCarousel />
+          </div>
         </div>
-        <div className="w-full md:w-[65%] mb-4 md:mb-0">
-          <ImageCarousel />
+
+        <div className="container mx-auto">
+          <CategoriesSection />
+          <PromotionsSection />
+          <NewProductsSection />
         </div>
+
+        {/* Livraison section */}
+        <DeliverySection />
+
+        {/* Pied de page */}
+        <Footer />
       </div>
+  );
+};
 
-      <div className="container mx-auto">
-        <CategoriesSection />
-        <PromotionsSection />
-        <NewProductsSection />
-      </div>
-
-      {/* Livraison section */}
-      <DeliverySection />
-
-      {/* Pied de page */}
-      <Footer />
-    </div>
+const PageAccueilBayaShop = () => {
+  return (
+    <CartProvider>
+      <PageHome />
+    </CartProvider>
   );
 };
 

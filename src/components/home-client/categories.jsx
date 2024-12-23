@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { Endpoint } from '../../helper/enpoint';
 
 const CategoriesSection = ({ categories, onCategorySelect }) => {
   const scrollContainerRef = useRef(null);
@@ -145,7 +146,7 @@ const CategoriesSection = ({ categories, onCategorySelect }) => {
                 mb-2
               "
               style={{
-                backgroundImage: `url(http://51.38.99.75:4004${category.img})`,
+                backgroundImage: `url(${Endpoint()}${category.img})`,
               }}
             ></div>
             <div className="
