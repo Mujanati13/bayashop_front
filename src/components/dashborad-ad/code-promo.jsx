@@ -12,11 +12,7 @@ import {
   Switch,
   DatePicker,
 } from "antd";
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { Endpoint } from "../../helper/enpoint";
 
@@ -30,10 +26,8 @@ const Promo = () => {
   const [currentPromoCode, setCurrentPromoCode] = useState(null);
   const [promoCodeForm] = Form.useForm();
 
-  // API Base URL (replace with your actual backend URL)
   const API_BASE_URL = Endpoint();
 
-  // Fetch data functions
   const fetchPromoCodes = async () => {
     try {
       setLoading(true);
@@ -67,20 +61,26 @@ const Promo = () => {
     }
   };
 
-  // CRUD Operations
+  const handleModalCancel = () => {
+    // promoCodeForm.resetFields();
+    setIsPromoCodeModalVisible(false);
+    setCurrentPromoCode(null);
+  };
+
   const createPromoCode = async (values) => {
     try {
       values.DateDebut = values.DateDebut.toISOString().split("T")[0];
       values.DateFin = values.DateFin.toISOString().split("T")[0];
       await axios.post(`${API_BASE_URL}/promo/promo-codes`, {
         ...values,
-        ProductIds: values.productScope === "specific" ? values.productIds : [],
-        CategoryIds: values.categoryScope === "specific" ? values.categoryIds : [],
+        productScope : "all",
+        categoryScope : "all",
+        ProductIds: values.productScope === "all" ? values.productIds || [] : [],
+        CategoryIds: values.categoryScope === "all" ? values.categoryIds || [] : [],
       });
       message.success("Code promo créé avec succès");
       fetchPromoCodes();
-      setIsPromoCodeModalVisible(false);
-      promoCodeForm.resetFields();
+      handleModalCancel();
     } catch (error) {
       message.error("Erreur lors de la création du code promo");
       console.error(error);
@@ -93,13 +93,12 @@ const Promo = () => {
       values.DateFin = values.DateFin.toISOString().split("T")[0];
       await axios.put(`${API_BASE_URL}/promo/promo-codes/${values.ID_PROMO}`, {
         ...values,
-        ProductIds: values.productScope === "specific" ? values.productIds : [],
-        CategoryIds: values.categoryScope === "specific" ? values.categoryIds : [],
+        ProductIds: values.productScope === "specific" ? values.productIds || [] : [],
+        CategoryIds: values.categoryScope === "specific" ? values.categoryIds || [] : [],
       });
       message.success("Code promo mis à jour avec succès");
       fetchPromoCodes();
-      setIsPromoCodeModalVisible(false);
-      promoCodeForm.resetFields();
+      handleModalCancel();
     } catch (error) {
       message.error("Erreur lors de la mise à jour du code promo");
       console.error(error);
@@ -117,16 +116,11 @@ const Promo = () => {
     }
   };
 
-  // Modal component
   const renderPromoCodeModal = () => (
     <Modal
       title={currentPromoCode ? "Modifier un Code Promo" : "Ajouter un Code Promo"}
-      visible={isPromoCodeModalVisible}
-      onCancel={() => {
-        setIsPromoCodeModalVisible(false);
-        setCurrentPromoCode(null);
-        promoCodeForm.resetFields();
-      }}
+      open={isPromoCodeModalVisible}
+      onCancel={handleModalCancel}
       onOk={() => {
         promoCodeForm
           .validateFields()
@@ -144,8 +138,9 @@ const Promo = () => {
         form={promoCodeForm}
         layout="vertical"
         initialValues={{
-          productScope: "all",
-          categoryScope: "all",
+          productScope: "none",
+          categoryScope: "none",
+          Active: true,
           ...currentPromoCode,
         }}
       >
@@ -195,16 +190,16 @@ const Promo = () => {
           <DatePicker style={{ width: "100%" }} />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="productScope"
           label="Application du Code Promo aux Produits"
         >
           <Select>
-            <Select.Option value="None">Aucun</Select.Option>
+            <Select.Option value="none">Aucun produit</Select.Option>
             <Select.Option value="all">Tous les Produits</Select.Option>
             <Select.Option value="specific">Produits Spécifiques</Select.Option>
           </Select>
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           noStyle
@@ -236,16 +231,16 @@ const Promo = () => {
           }
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="categoryScope"
           label="Application du Code Promo aux Catégories"
         >
           <Select>
-            <Select.Option value="None">Aucun</Select.Option>
+            <Select.Option value="none">Aucune catégorie</Select.Option>
             <Select.Option value="all">Toutes les Catégories</Select.Option>
             <Select.Option value="specific">Catégories Spécifiques</Select.Option>
           </Select>
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           noStyle
@@ -284,14 +279,12 @@ const Promo = () => {
     </Modal>
   );
 
-  // Effect hooks
   useEffect(() => {
     fetchPromoCodes();
     fetchProducts();
     fetchCategories();
   }, []);
 
-  // Main render
   return (
     <Card
       title="Gestion des Codes Promo"
@@ -300,8 +293,8 @@ const Promo = () => {
           type="primary"
           onClick={() => {
             setCurrentPromoCode(null);
+            // promoCodeForm.resetFields();
             setIsPromoCodeModalVisible(true);
-            promoCodeForm.resetFields();
           }}
         >
           <PlusOutlined /> Nouveau Code Promo
@@ -349,11 +342,15 @@ const Promo = () => {
               const scopeText = [];
               if (record.ProductIds?.length) {
                 scopeText.push(`${record.ProductIds.length} Produit(s)`);
+              } else if (record.productScope === "none") {
+                scopeText.push("Aucun produit");
               } else {
                 scopeText.push("Tous Produits");
               }
               if (record.CategoryIds?.length) {
                 scopeText.push(`${record.CategoryIds.length} Catégorie(s)`);
+              } else if (record.categoryScope === "none") {
+                scopeText.push("Aucune catégorie");
               } else {
                 scopeText.push("Toutes Catégories");
               }
@@ -374,8 +371,10 @@ const Promo = () => {
                       ...record,
                       DateDebut: moment(record.DateDebut),
                       DateFin: moment(record.DateFin),
-                      productScope: record.ProductIds?.length ? "specific" : "all",
-                      categoryScope: record.CategoryIds?.length ? "specific" : "all",
+                      productScope: record.ProductIds?.length ? "specific" : 
+                                 (record.productScope === "none" ? "none" : "all"),
+                      categoryScope: record.CategoryIds?.length ? "specific" : 
+                                  (record.categoryScope === "none" ? "none" : "all"),
                     });
                     setIsPromoCodeModalVisible(true);
                   }}
