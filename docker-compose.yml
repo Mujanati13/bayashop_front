@@ -11,10 +11,10 @@ services:
       resources:
         limits:
           cpus: '0.2'
-          memory: 656M
+          memory: 856M
         reservations:
           cpus: '0.1'
-          memory: 628M
+          memory: 828M
     environment:
       NODE_OPTIONS: "--max-old-space-size=1006"
     volumes:

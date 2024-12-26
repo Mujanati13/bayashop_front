@@ -1,13 +1,26 @@
-import { useState, useEffect } from 'react';
-import { 
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, 
-  Tooltip, Legend, ResponsiveContainer 
-} from 'recharts';
-import { 
-  AlertTriangle, TrendingUp, Package, ShoppingCart, 
-  DollarSign, Archive, ChevronDown
-} from 'lucide-react';
-import { Endpoint } from '../../helper/enpoint';
+import { useState, useEffect } from "react";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import {
+  AlertTriangle,
+  TrendingUp,
+  Package,
+  ShoppingCart,
+  DollarSign,
+  Archive,
+  ChevronDown,
+} from "lucide-react";
+import { Endpoint } from "../../helper/enpoint";
 
 const DashboardPlus = () => {
   const [revenueStats, setRevenueStats] = useState([]);
@@ -27,14 +40,14 @@ const DashboardPlus = () => {
           categoriesRes,
           stockRes,
           ordersRes,
-          trendsRes
+          trendsRes,
         ] = await Promise.all([
-          fetch(Endpoint()+'/dashboard/revenue-stats'),
-          fetch(Endpoint()+'/dashboard/top-products'),
-          fetch(Endpoint()+'/dashboard/category-stats'),
-          fetch(Endpoint()+'/dashboard/low-stock'),
-          fetch(Endpoint()+'/dashboard/recent-orders'),
-          fetch(Endpoint()+'/dashboard/sales-trends')
+          fetch(Endpoint() + "/dashboard/revenue-stats"),
+          fetch(Endpoint() + "/dashboard/top-products"),
+          fetch(Endpoint() + "/dashboard/category-stats"),
+          fetch(Endpoint() + "/dashboard/low-stock"),
+          fetch(Endpoint() + "/dashboard/recent-orders"),
+          fetch(Endpoint() + "/dashboard/sales-trends"),
         ]);
 
         const [
@@ -43,14 +56,14 @@ const DashboardPlus = () => {
           categoriesData,
           stockData,
           ordersData,
-          trendsData
+          trendsData,
         ] = await Promise.all([
           revenueRes.json(),
           productsRes.json(),
           categoriesRes.json(),
           stockRes.json(),
           ordersRes.json(),
-          trendsRes.json()
+          trendsRes.json(),
         ]);
 
         setRevenueStats(revenueData);
@@ -61,7 +74,10 @@ const DashboardPlus = () => {
         setSalesTrends(trendsData);
         setLoading(false);
       } catch (error) {
-        console.error('Erreur lors de la récupération des données du tableau de bord:', error);
+        console.error(
+          "Erreur lors de la récupération des données du tableau de bord:",
+          error
+        );
       }
     };
 
@@ -69,8 +85,14 @@ const DashboardPlus = () => {
   }, []);
 
   // Calculer le revenu total
-  const totalRevenue = revenueStats.reduce((sum, stat) => sum + stat.total_revenue, 0);
-  const totalOrders = revenueStats.reduce((sum, stat) => sum + stat.order_count, 0);
+  const totalRevenue = revenueStats.reduce(
+    (sum, stat) => sum + stat.total_revenue,
+    0
+  );
+  const totalOrders = revenueStats.reduce(
+    (sum, stat) => sum + stat.order_count,
+    0
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -121,16 +143,16 @@ const DashboardPlus = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="total_sales" 
-                  stroke="#8884d8" 
+                <Line
+                  type="monotone"
+                  dataKey="total_sales"
+                  stroke="#8884d8"
                   name="Ventes"
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="order_count" 
-                  stroke="#82ca9d" 
+                <Line
+                  type="monotone"
+                  dataKey="order_count"
+                  stroke="#82ca9d"
                   name="Commandes"
                 />
               </LineChart>
@@ -140,7 +162,9 @@ const DashboardPlus = () => {
 
         {/* Graphique de distribution des catégories */}
         <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Distribution par Catégorie</h2>
+          <h2 className="text-lg font-semibold mb-4">
+            Distribution par Catégorie
+          </h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={categoryStats}>
@@ -209,13 +233,18 @@ const DashboardPlus = () => {
         </div>
         <div className="p-4">
           {lowStock.map((item) => (
-            <div key={item.ID_ART} className="flex items-center justify-between py-2">
+            <div
+              key={item.ID_ART}
+              className="flex items-center justify-between py-2"
+            >
               <div>
                 <p className="font-medium">{item.Nom}</p>
                 <p className="text-sm text-gray-500">ID: {item.ID_ART}</p>
               </div>
               <div className="text-right">
-                <p className="font-medium text-red-600">{item.Quantite} unités restantes</p>
+                <p className="font-medium text-red-600">
+                  {item.Quantite} unités restantes
+                </p>
                 <p className="text-sm text-gray-500">{item.Prix}€</p>
               </div>
             </div>
@@ -230,10 +259,16 @@ const DashboardPlus = () => {
 const StatCard = ({ title, value, icon, trend, warning = false }) => (
   <div className="bg-white p-6 rounded-lg shadow">
     <div className="flex items-center justify-between mb-4">
-      <div className={`p-2 rounded-lg ${warning ? 'bg-red-100' : 'bg-blue-100'}`}>
+      <div
+        className={`p-2 rounded-lg ${warning ? "bg-red-100" : "bg-blue-100"}`}
+      >
         {icon}
       </div>
-      <span className={`text-sm ${warning ? 'text-red-600' : 'text-green-600'} flex items-center`}>
+      <span
+        className={`text-sm ${
+          warning ? "text-red-600" : "text-green-600"
+        } flex items-center`}
+      >
         {trend}
         <ChevronDown className="w-4 h-4 ml-1" />
       </span>
@@ -246,35 +281,37 @@ const StatCard = ({ title, value, icon, trend, warning = false }) => (
 const StatusBadge = ({ status }) => {
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
-      case 'completed':
-      case 'terminée':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-      case 'en attente':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'cancelled':
-      case 'annulée':
-        return 'bg-red-100 text-red-800';
+      case "completed":
+      case "terminée":
+        return "bg-green-100 text-green-800";
+      case "pending":
+      case "en attente":
+        return "bg-yellow-100 text-yellow-800";
+      case "cancelled":
+      case "annulée":
+        return "bg-red-100 text-red-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const translateStatus = (status) => {
     switch (status.toLowerCase()) {
-      case 'completed':
-        return 'Terminée';
-      case 'pending':
-        return 'En attente';
-      case 'cancelled':
-        return 'Annulée';
+      case "completed":
+        return "Terminée";
+      case "pending":
+        return "En attente";
+      case "cancelled":
+        return "Annulée";
       default:
         return status;
     }
   };
 
   return (
-    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(status)}`}>
+    <span
+      className={`px-2 py-1 text-xs rounded-full ${getStatusColor(status)}`}
+    >
       {translateStatus(status)}
     </span>
   );
