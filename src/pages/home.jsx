@@ -390,7 +390,7 @@ const PageHome = () => {
                   name={product.Nom}
                   oldPrice={product.Prix}
                   newPrice={product.Prix}
-                  status={product.Quantite <= 10}
+                  status={product.Quantite}
                   image={product.Photo || DEFAULT_PRODUCT_IMAGE}
                 />
               </div>

@@ -121,7 +121,10 @@ const Category = () => {
       onCancel={() => {
         setIsCategoryModalVisible(false);
         setCurrentCategory(null);
-        categoryForm.resetFields();
+        categoryForm.setFieldsValue({
+          Nom: null,
+          ImageUrl: null,
+        });
         setCategoryFileList([]);
       }}
       onOk={() => {

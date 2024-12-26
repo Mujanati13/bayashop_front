@@ -288,7 +288,9 @@ const Products = () => {
         setIsModalVisible(false);
         setCurrentProduct(null);
         setFileList([]);
-        form.resetFields();
+        form.setFieldValue(
+          null,
+        );
       }}
       onOk={() => {
         form
@@ -440,7 +442,7 @@ const Products = () => {
           onClick={() => {
             setCurrentProduct(null);
             setIsModalVisible(true);
-            form.resetFields();
+            form.setFieldValue(null);
           }}
         >
           <PlusOutlined /> Nouveau Produit

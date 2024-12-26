@@ -62,7 +62,17 @@ const Promo = () => {
   };
 
   const handleModalCancel = () => {
-    // promoCodeForm.resetFields();
+    promoCodeForm.setFieldsValue({
+      Code: "",
+      Reduction: null,
+      DateDebut: null,
+      DateFin: null,
+      productScope: "none",
+      categoryScope: "none",
+      Active: true,
+      productIds: [],
+      categoryIds: [],
+    });
     setIsPromoCodeModalVisible(false);
     setCurrentPromoCode(null);
   };
@@ -73,10 +83,12 @@ const Promo = () => {
       values.DateFin = values.DateFin.toISOString().split("T")[0];
       await axios.post(`${API_BASE_URL}/promo/promo-codes`, {
         ...values,
-        productScope : "all",
-        categoryScope : "all",
-        ProductIds: values.productScope === "all" ? values.productIds || [] : [],
-        CategoryIds: values.categoryScope === "all" ? values.categoryIds || [] : [],
+        productScope: "all",
+        categoryScope: "all",
+        ProductIds:
+          values.productScope === "all" ? values.productIds || [] : [],
+        CategoryIds:
+          values.categoryScope === "all" ? values.categoryIds || [] : [],
       });
       message.success("Code promo créé avec succès");
       fetchPromoCodes();
@@ -93,8 +105,10 @@ const Promo = () => {
       values.DateFin = values.DateFin.toISOString().split("T")[0];
       await axios.put(`${API_BASE_URL}/promo/promo-codes/${values.ID_PROMO}`, {
         ...values,
-        ProductIds: values.productScope === "specific" ? values.productIds || [] : [],
-        CategoryIds: values.categoryScope === "specific" ? values.categoryIds || [] : [],
+        ProductIds:
+          values.productScope === "specific" ? values.productIds || [] : [],
+        CategoryIds:
+          values.categoryScope === "specific" ? values.categoryIds || [] : [],
       });
       message.success("Code promo mis à jour avec succès");
       fetchPromoCodes();
@@ -118,7 +132,9 @@ const Promo = () => {
 
   const renderPromoCodeModal = () => (
     <Modal
-      title={currentPromoCode ? "Modifier un Code Promo" : "Ajouter un Code Promo"}
+      title={
+        currentPromoCode ? "Modifier un Code Promo" : "Ajouter un Code Promo"
+      }
       open={isPromoCodeModalVisible}
       onCancel={handleModalCancel}
       onOk={() => {
@@ -126,7 +142,10 @@ const Promo = () => {
           .validateFields()
           .then((values) => {
             currentPromoCode
-              ? updatePromoCode({ ...values, ID_PROMO: currentPromoCode.ID_PROMO })
+              ? updatePromoCode({
+                  ...values,
+                  ID_PROMO: currentPromoCode.ID_PROMO,
+                })
               : createPromoCode(values);
           })
           .catch((error) => {
@@ -155,7 +174,9 @@ const Promo = () => {
         <Form.Item
           name="Reduction"
           label="Pourcentage de Réduction"
-          rules={[{ required: true, message: "Pourcentage de réduction requis" }]}
+          rules={[
+            { required: true, message: "Pourcentage de réduction requis" },
+          ]}
         >
           <Input type="number" min={1} max={100} addonAfter="%" />
         </Form.Item>
@@ -262,7 +283,10 @@ const Promo = () => {
               >
                 <Select mode="multiple" style={{ width: "100%" }}>
                   {categories.map((category) => (
-                    <Select.Option key={category.ID_CAT} value={category.ID_CAT}>
+                    <Select.Option
+                      key={category.ID_CAT}
+                      value={category.ID_CAT}
+                    >
                       {category.Nom}
                     </Select.Option>
                   ))}
@@ -293,7 +317,17 @@ const Promo = () => {
           type="primary"
           onClick={() => {
             setCurrentPromoCode(null);
-            // promoCodeForm.resetFields();
+            promoCodeForm.setFieldsValue({
+              Code: "",
+              Reduction: null,
+              DateDebut: null,
+              DateFin: null,
+              productScope: "none",
+              categoryScope: "none",
+              Active: true,
+              productIds: [],
+              categoryIds: [],
+            });
             setIsPromoCodeModalVisible(true);
           }}
         >
@@ -371,10 +405,16 @@ const Promo = () => {
                       ...record,
                       DateDebut: moment(record.DateDebut),
                       DateFin: moment(record.DateFin),
-                      productScope: record.ProductIds?.length ? "specific" : 
-                                 (record.productScope === "none" ? "none" : "all"),
-                      categoryScope: record.CategoryIds?.length ? "specific" : 
-                                  (record.categoryScope === "none" ? "none" : "all"),
+                      productScope: record.ProductIds?.length
+                        ? "specific"
+                        : record.productScope === "none"
+                        ? "none"
+                        : "all",
+                      categoryScope: record.CategoryIds?.length
+                        ? "specific"
+                        : record.categoryScope === "none"
+                        ? "none"
+                        : "all",
                     });
                     setIsPromoCodeModalVisible(true);
                   }}
