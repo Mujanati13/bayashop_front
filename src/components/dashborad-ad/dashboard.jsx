@@ -19,8 +19,19 @@ import {
   DollarSign,
   Archive,
   ChevronDown,
+  Truck,
 } from "lucide-react";
 import { Endpoint } from "../../helper/enpoint";
+
+// Static delivery data
+const staticDeliveryData = [
+  { mois: "Janvier", livraisons: 245, onTime: 220, delayed: 25 },
+  { mois: "Février", livraisons: 285, onTime: 260, delayed: 25 },
+  { mois: "Mars", livraisons: 310, onTime: 290, delayed: 20 },
+  { mois: "Avril", livraisons: 265, onTime: 245, delayed: 20 },
+  { mois: "Mai", livraisons: 290, onTime: 270, delayed: 20 },
+  { mois: "Juin", livraisons: 320, onTime: 300, delayed: 20 },
+];
 
 const DashboardPlus = () => {
   const [revenueStats, setRevenueStats] = useState([]);
@@ -29,7 +40,14 @@ const DashboardPlus = () => {
   const [lowStock, setLowStock] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
   const [salesTrends, setSalesTrends] = useState([]);
+  const [deliveryStats, setDeliveryStats] = useState(staticDeliveryData);
   const [loading, setLoading] = useState(true);
+
+  // New states for sales analytics
+  const [monthlySales, setMonthlySales] = useState(null);
+  const [productPerformance, setProductPerformance] = useState(null);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -41,6 +59,9 @@ const DashboardPlus = () => {
           stockRes,
           ordersRes,
           trendsRes,
+          // New API calls
+          monthlySalesRes,
+          productPerfRes,
         ] = await Promise.all([
           fetch(Endpoint() + "/dashboard/revenue-stats"),
           fetch(Endpoint() + "/dashboard/top-products"),
@@ -48,6 +69,9 @@ const DashboardPlus = () => {
           fetch(Endpoint() + "/dashboard/low-stock"),
           fetch(Endpoint() + "/dashboard/recent-orders"),
           fetch(Endpoint() + "/dashboard/sales-trends"),
+          // New endpoints
+          fetch(Endpoint() + `/dashboard/sales-by-month`),
+          fetch(Endpoint() + `/dashboard/sales-by-month`),
         ]);
 
         const [
@@ -57,6 +81,8 @@ const DashboardPlus = () => {
           stockData,
           ordersData,
           trendsData,
+          monthlySalesData,
+          productPerfData,
         ] = await Promise.all([
           revenueRes.json(),
           productsRes.json(),
@@ -64,6 +90,8 @@ const DashboardPlus = () => {
           stockRes.json(),
           ordersRes.json(),
           trendsRes.json(),
+          monthlySalesRes.json(),
+          productPerfRes.json(),
         ]);
 
         setRevenueStats(revenueData);
@@ -72,48 +100,79 @@ const DashboardPlus = () => {
         setLowStock(stockData);
         setRecentOrders(ordersData);
         setSalesTrends(trendsData);
+        setMonthlySales(monthlySalesData);
+        setProductPerformance(productPerfData);
         setLoading(false);
       } catch (error) {
-        console.error(
-          "Erreur lors de la récupération des données du tableau de bord:",
-          error
-        );
+        console.error("Error fetching dashboard data:", error);
       }
     };
 
     fetchDashboardData();
-  }, []);
+  }, [selectedYear, selectedMonth]);
 
-  // Calculer le revenu total
-  const totalRevenue = revenueStats.reduce(
-    (sum, stat) => sum + stat.total_revenue,
+  // Calculate delivery statistics
+  const totalDeliveries = deliveryStats.reduce(
+    (sum, stat) => sum + stat.livraisons,
     0
   );
-  const totalOrders = revenueStats.reduce(
-    (sum, stat) => sum + stat.order_count,
+  const onTimeDeliveries = deliveryStats.reduce(
+    (sum, stat) => sum + stat.onTime,
     0
   );
+  const deliveryRate = ((onTimeDeliveries / totalDeliveries) * 100).toFixed(1);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      {/* En-tête */}
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Tableau de bord</h1>
+        <div className="mt-4 flex gap-4">
+          <select
+            className="px-4 py-2 border rounded-lg bg-white"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+          >
+            {[2022, 2023, 2024].map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+          <select
+            className="px-4 py-2 border rounded-lg bg-white"
+            value={selectedMonth || ""}
+            onChange={(e) => setSelectedMonth(e.target.value || null)}
+          >
+            <option value="">All Months</option>
+            {monthlySales?.monthly_sales.map((month, index) => (
+              <option key={index} value={index + 1}>
+                {month.month_name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Cartes statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <StatCard
-          title="Revenu Total"
-          value={`${totalRevenue.toLocaleString()}€`}
+          title="Revenue Total"
+          value={`${monthlySales?.summary.total_annual_revenue.toLocaleString()}€`}
           icon={<DollarSign className="w-6 h-6" />}
           trend="+12,5%"
         />
         <StatCard
           title="Commandes Totales"
-          value={totalOrders.toString()}
+          value={monthlySales?.summary.total_annual_orders.toString()}
           icon={<ShoppingCart className="w-6 h-6" />}
           trend="+5,2%"
+        />
+        <StatCard
+          title="Taux de Livraison"
+          value={`${deliveryRate}%`}
+          icon={<Truck className="w-6 h-6" />}
+          trend="À l'heure"
         />
         <StatCard
           title="Catégories"
@@ -122,7 +181,7 @@ const DashboardPlus = () => {
           trend="Actif"
         />
         <StatCard
-          title="Articles en Stock Faible"
+          title="Stock Faible"
           value={lowStock.length.toString()}
           icon={<AlertTriangle className="w-6 h-6" />}
           trend="Attention"
@@ -130,10 +189,10 @@ const DashboardPlus = () => {
         />
       </div>
 
-      {/* Section des graphiques */}
+      {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
-        {/* Graphique des tendances de vente */}
-        <div className="bg-white p-4 rounded-lg shadow">
+        {/* Sales Trends Chart */}
+        {/* <div className="bg-white p-4 rounded-lg shadow">
           <h2 className="text-lg font-semibold mb-4">Tendances des Ventes</h2>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -158,9 +217,9 @@ const DashboardPlus = () => {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </div> */}
 
-        {/* Graphique de distribution des catégories */}
+        {/* Category Distribution Chart */}
         <div className="bg-white p-4 rounded-lg shadow">
           <h2 className="text-lg font-semibold mb-4">
             Distribution par Catégorie
@@ -179,9 +238,33 @@ const DashboardPlus = () => {
             </ResponsiveContainer>
           </div>
         </div>
+
+        {/* Product Performance Chart */}
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-4">
+            Performance des Produits
+          </h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={productPerformance?.monthly_sales}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month_name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="total_orders" fill="#8884d8" name="Commandes" />
+                <Bar
+                  dataKey="total_revenue"
+                  fill="#82ca9d"
+                  name="Revenu Total"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
-      {/* Tableau des commandes récentes */}
+      {/* Recent Orders Table */}
       <div className="bg-white rounded-lg shadow mb-8">
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold">Commandes Récentes</h2>
@@ -226,7 +309,7 @@ const DashboardPlus = () => {
         </div>
       </div>
 
-      {/* Alertes de stock faible */}
+      {/* Low Stock Alerts */}
       <div className="bg-white rounded-lg shadow">
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold">Alertes de Stock Faible</h2>
@@ -255,7 +338,7 @@ const DashboardPlus = () => {
   );
 };
 
-// Composants auxiliaires
+// StatCard Component
 const StatCard = ({ title, value, icon, trend, warning = false }) => (
   <div className="bg-white p-6 rounded-lg shadow">
     <div className="flex items-center justify-between mb-4">
@@ -278,6 +361,7 @@ const StatCard = ({ title, value, icon, trend, warning = false }) => (
   </div>
 );
 
+// StatusBadge Component
 const StatusBadge = ({ status }) => {
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
