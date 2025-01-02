@@ -160,7 +160,7 @@ const Products = () => {
                 width="100%"
                 height={300}
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
-                src={Endpoint()+selectedProductDetails.Photo}
+                src={Endpoint() + selectedProductDetails.Photo}
                 alt={selectedProductDetails.Nom}
               />
             </div>
@@ -288,9 +288,7 @@ const Products = () => {
         setIsModalVisible(false);
         setCurrentProduct(null);
         setFileList([]);
-        form.setFieldValue(
-          null,
-        );
+        form.setFieldValue(null);
       }}
       onOk={() => {
         form
@@ -415,7 +413,13 @@ const Products = () => {
         >
           <Input type="number" step="0.01" />
         </Form.Item>
-
+        <Form.Item
+          name="Alertes Min"
+          label="AlertesMin"
+          rules={[{ required: true, message: "Prix requis" }]}
+        >
+          <Input type="number" step="0.01" />
+        </Form.Item>
         <Form.Item
           name="ID_CAT"
           label="Catégorie"

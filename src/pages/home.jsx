@@ -1,4 +1,4 @@
-import React, { useState, useEffect , useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ShoppingCartOutlined,
   UserOutlined,
@@ -41,9 +41,7 @@ const PageHome = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
-  const {
-    cart,
-  } = useCart();
+  const { cart } = useCart();
 
   const toggleCartModal = () => {
     setIsCartModalVisible(!isCartModalVisible);
@@ -365,38 +363,38 @@ const PageHome = () => {
     );
 
     return (
-        <div className="mt-5 p-5 text-lg font-semibold text-center">
-          <div>Nouveautés</div>
-          <Carousel
-            responsive={responsive}
-            infinite={false}
-            autoPlay={false}
-            autoPlaySpeed={3000}
-            customLeftArrow={<CustomLeftArrow />}
-            customRightArrow={<CustomRightArrow />}
-            keyBoardControl={true}
-            customTransition="all .5"
-            transitionDuration={500}
-            containerClass="carousel-container"
-            removeArrowOnDeviceType={["tablet", "mobile"]}
-            dotListClass="custom-dot-list-style"
-            itemClass="carousel-item-padding-40-px"
-          >
-            {newProducts.map((product) => (
-              <div className="p-3">
-                <Nouveaute
-                  key={product.ID_ART}
-                  id={product.ID_ART}
-                  name={product.Nom}
-                  oldPrice={product.Prix}
-                  newPrice={product.Prix}
-                  status={product.Quantite}
-                  image={product.Photo || DEFAULT_PRODUCT_IMAGE}
-                />
-              </div>
-            ))}
-          </Carousel>
-        </div>
+      <div className="mt-5 p-5 text-lg font-semibold text-center">
+        <div>Nouveautés</div>
+        <Carousel
+          responsive={responsive}
+          infinite={false}
+          autoPlay={false}
+          autoPlaySpeed={3000}
+          customLeftArrow={<CustomLeftArrow />}
+          customRightArrow={<CustomRightArrow />}
+          keyBoardControl={true}
+          customTransition="all .5"
+          transitionDuration={500}
+          containerClass="carousel-container"
+          removeArrowOnDeviceType={["tablet", "mobile"]}
+          dotListClass="custom-dot-list-style"
+          itemClass="carousel-item-padding-40-px"
+        >
+          {newProducts.map((product) => (
+            <div className="p-3">
+              <Nouveaute
+                key={product.ID_ART}
+                id={product.ID_ART}
+                name={product.Nom}
+                oldPrice={product.Prix}
+                newPrice={product.Prix}
+                status={product.Quantite}
+                image={product.Photo || DEFAULT_PRODUCT_IMAGE}
+              />
+            </div>
+          ))}
+        </Carousel>
+      </div>
     );
   };
 
@@ -404,134 +402,144 @@ const PageHome = () => {
   if (error) return <div>Erreur de chargement</div>;
 
   return (
-      <div className="flex flex-col">
-        {/* Cart Modal */}
-        <CartModal
-          visible={isCartModalVisible}
-          onClose={() => setIsCartModalVisible(false)}
+    <div className="flex flex-col">
+      {/* Cart Modal */}
+      <CartModal
+        visible={isCartModalVisible}
+        onClose={() => setIsCartModalVisible(false)}
+      />
+
+      {/* Mobile Overlay when Side Menu is Open */}
+      {isSideMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40"
+          onClick={toggleSideMenu}
         />
+      )}
 
-        {/* Mobile Overlay when Side Menu is Open */}
-        {isSideMenuOpen && (
-          <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-            onClick={toggleSideMenu}
-          />
-        )}
+      {/* Side Menu Component */}
+      <SideMenu />
 
-        {/* Side Menu Component */}
-        <SideMenu />
+      {/* Search Results Modal */}
+      <SearchResultsModal />
 
-        {/* Search Results Modal */}
-        <SearchResultsModal />
+      {/* En-tête */}
+      {!isScrolled && (
+        <div className="bg-green-500 py-2 text-white text-center">
+          <p className="font-medium">Livraison gratuite à partir de 99€</p>
+        </div>
+      )}
 
-        {/* En-tête */}
-        {!isScrolled && (
-          <div className="bg-green-500 py-2 text-white text-center">
-            <p className="font-medium">Livraison gratuite à partir de 99€</p>
-          </div>
-        )}
-
-        <header
-          className={`bg-gray-800 py-4 text-white p-5 ${
-            isScrolled ? "fixed top-0 w-full z-10" : ""
-          }`}
-        >
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-3xl font-bold">
-                <span className="text-blue-300">Baya</span> Shop
-              </h1>
-            </div>
-
-            {/* Mobile Navigation Icons */}
-            <div className="flex items-center space-x-4 md:hidden">
-              <Popover
-                content={<SearchSuggestions />}
-                trigger="click"
-                placement="bottomRight"
-              >
-                <SearchOutlined
-                  className="text-xl cursor-pointer"
-                  onClick={() => {}}
+      <header
+        className={`bg-gray-200 py-4 text-white p-5 ${
+          isScrolled ? "fixed top-0 w-full z-10" : ""
+        }`}
+      >
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-3xl font-bold flex items-center space-x-2">
+              <span className="text-blue-300">
+                <img
+                  src="../../src/assets/logo-removebg-preview.png"
+                  width={150}
+                  height={100}
+                  alt=""
+                  srcset=""
+                  className="object-contain"
                 />
-              </Popover>
-              <MenuOutlined
+              </span>{" "}
+              {/* <span>Shop</span>{" "} */}
+            </h1>
+          </div>
+
+          {/* Mobile Navigation Icons */}
+          <div className="flex items-center space-x-4 md:hidden">
+            <Popover
+              content={<SearchSuggestions />}
+              trigger="click"
+              placement="bottomRight"
+            >
+              <SearchOutlined
                 className="text-xl cursor-pointer"
-                onClick={toggleSideMenu}
+                onClick={() => {}}
               />
-            </div>
+            </Popover>
+            <MenuOutlined
+              className="text-xl cursor-pointer"
+              onClick={toggleSideMenu}
+            />
+          </div>
 
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Popover
-                content={<SearchSuggestions />}
-                trigger="click"
-                placement="bottomRight"
-              >
-                <Input.Search
-                  placeholder="Rechercher"
-                  allowClear
-                  value={searchQuery}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  onSearch={openSearchModal}
-                  style={{ width: 500 }}
-                  prefix={<SearchOutlined />}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Popover
+              content={<SearchSuggestions />}
+              trigger="click"
+              placement="bottomRight"
+            >
+              <Input.Search
+                placeholder="Rechercher"
+                allowClear
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                onSearch={openSearchModal}
+                style={{ width: 500 }}
+                prefix={<SearchOutlined />}
+              />
+            </Popover>
+            <div className="flex items-center space-x-4">
+              <Badge count={counter} size="small">
+                <ShoppingCartOutlined
+                  className="text-xl cursor-pointer text-black"
+                  onClick={toggleCartModal}
                 />
-              </Popover>
-              <div className="flex items-center space-x-4">
-                <Badge count={counter} size="small">
-                  <ShoppingCartOutlined
-                    className="text-xl cursor-pointer text-white"
-                    onClick={toggleCartModal}
-                  />
-                </Badge>
-                <UserOutlined className="text-xl" />
-                <TruckOutlined className="text-xl" />
-              </div>
+              </Badge>
+              <UserOutlined className="text-xl  text-black" />
+              <TruckOutlined className="text-xl  text-black" />
             </div>
           </div>
-        </header>
-
-        {/* Desktop Navigation */}
-        <nav className="bg-white border-b border-gray-200 py-4 mt-0 hidden md:block">
-          <ul className="flex justify-center space-x-30 sm:space-x-20">
-            <li>
-              <a href="#" className="text-blue-500 hover:text-blue-700">
-                Promotions
-              </a>
-            </li>
-            {/* ... other navigation items ... */}
-          </ul>
-        </nav>
-
-        {/* Rest of the content */}
-        <div className="flex flex-col-reverse md:flex-row items-center justify-between p-4 mt-0 container mx-auto px-4">
-          <div className="w-full md:w-[35%] mt-4 md:mt-0 text-center md:text-left">
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Les plats préparés sont prêts !
-            </h2>
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
-              Voir la collection
-            </button>
-          </div>
-          <div className="w-full md:w-[65%] mb-4 md:mb-0">
-            <ImageCarousel />
-          </div>
         </div>
+      </header>
 
-        <div className="container mx-auto">
-          <CategoriesSection />
-          <PromotionsSection />
-          <NewProductsSection />
+      {/* Desktop Navigation */}
+      <nav className="bg-white border-b border-gray-200 py-4 mt-0 hidden md:block">
+        <ul className="flex justify-center space-x-30 sm:space-x-20">
+          <li>
+            <a href="#" className="text-blue-500 hover:text-blue-700">
+              Promotions
+            </a>
+          </li>
+          {/* ... other navigation items ... */}
+        </ul>
+      </nav>
+
+      {/* Rest of the content */}
+      <div className="flex flex-col-reverse md:flex-row items-center justify-between p-4 mt-0 container mx-auto px-4">
+        <div className="w-full md:w-[35%] mt-4 md:mt-0 text-center md:text-left">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">
+            Les plats préparés sont prêts !
+          </h2>
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
+            Voir la collection
+          </button>
         </div>
-
-        {/* Livraison section */}
-        <DeliverySection />
-
-        {/* Pied de page */}
-        <Footer />
+        <div className="w-full md:w-[65%] mb-4 md:mb-0">
+          <ImageCarousel />
+        </div>
       </div>
+
+      <div className="container mx-auto">
+        <CategoriesSection />
+        <PromotionsSection />
+        <NewProductsSection />
+      </div>
+
+      {/* Livraison section */}
+      <DeliverySection />
+
+      {/* Pied de page */}
+      <Footer />
+    </div>
   );
 };
 

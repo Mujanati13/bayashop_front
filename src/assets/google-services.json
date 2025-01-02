@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "938950247151",
+    "project_id": "horse-monitoring-935d2",
+    "storage_bucket": "horse-monitoring-935d2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:938950247151:android:6a8649925eecc9c7aed11a",
+        "android_client_info": {
+          "package_name": "com.fithouse"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVzXAPanB6JyiAupi6wV7FbrnyasJUJeA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
