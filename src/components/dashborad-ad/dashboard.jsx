@@ -10,7 +10,7 @@ import {
   Line,
   ComposedChart,
   BarChart,
-  LineChart
+  LineChart,
 } from "recharts";
 
 import {
@@ -26,22 +26,22 @@ import { Endpoint } from "../../helper/enpoint";
 
 const formatDate = (dateStr) => {
   const date = new Date(dateStr);
-  return date.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
+  return date.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 };
 
 const OrdersVisualization = ({ commandSales }) => {
   // Transform data for chart
   const chartData = Object.entries(commandSales.data).map(([date, data]) => ({
-    date : formatDate(date),
+    date: formatDate(date),
     totalOrders: data.totalOrders,
     totalAmount: data.totalAmount,
     pending: data.status.pending,
     completed: data.status.completed,
-    cancelled: data.status.cancelled
+    cancelled: data.status.cancelled,
   }));
 
   return (
@@ -51,42 +51,37 @@ const OrdersVisualization = ({ commandSales }) => {
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="date" 
-              angle={-45} 
-              textAnchor="end"
-              height={60}
-            />
+            <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} />
             <YAxis yAxisId="left" />
             <YAxis yAxisId="right" orientation="right" />
             <Tooltip />
             <Legend />
-            <Line 
+            <Line
               yAxisId="left"
-              type="monotone" 
-              dataKey="completed" 
-              stroke="#82ca9d" 
+              type="monotone"
+              dataKey="completed"
+              stroke="#82ca9d"
               name="Complétées"
             />
-            <Line 
+            <Line
               yAxisId="left"
-              type="monotone" 
-              dataKey="pending" 
-              stroke="#8884d8" 
+              type="monotone"
+              dataKey="pending"
+              stroke="#8884d8"
               name="En attente"
             />
-            <Line 
+            <Line
               yAxisId="left"
-              type="monotone" 
-              dataKey="cancelled" 
-              stroke="#ff8042" 
+              type="monotone"
+              dataKey="cancelled"
+              stroke="#ff8042"
               name="Annulées"
             />
-            <Line 
+            <Line
               yAxisId="right"
-              type="monotone" 
-              dataKey="totalAmount" 
-              stroke="#ffc658" 
+              type="monotone"
+              dataKey="totalAmount"
+              stroke="#ffc658"
               name="Montant Total"
             />
           </LineChart>
@@ -149,11 +144,20 @@ const StatusBadge = ({ status }) => {
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="custom-tooltip" style={{ backgroundColor: '#fff', padding: '10px', border: '1px solid #ccc' }}>
+      <div
+        className="custom-tooltip"
+        style={{
+          backgroundColor: "#fff",
+          padding: "10px",
+          border: "1px solid #ccc",
+        }}
+      >
         <p className="label">{`Produit: ${label}`}</p>
         <p>{`Revenu: ${payload[0].value}€`}</p>
         <p>{`Commandes: ${payload[1].value}`}</p>
-        <p>{`Date: ${new Date(payload[0].payload.timestamp).toLocaleDateString()}`}</p>
+        <p>{`Date: ${new Date(
+          payload[0].payload.timestamp
+        ).toLocaleDateString()}`}</p>
       </div>
     );
   }
@@ -189,18 +193,20 @@ const Charts = ({ categoryStats, productSales, startDate, endDate }) => (
               bottom: 5,
             }}
           >
+            <Bar dataKey="total_revenue" fill="#8884d8" name="Revenu" />
+            <Bar dataKey="total_orders" fill="#82ca9d" name="Commandes" />
+
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="product_name"
-              angle={-45}
+              angle={-10}
               textAnchor="end"
               height={60}
+              fontSize={13}
             />
             <YAxis />
             <Tooltip content={<CustomTooltip />} />
             <Legend />
-            <Bar dataKey="total_revenue" fill="#8884d8" name="Revenu" />
-            <Bar dataKey="total_orders" fill="#82ca9d" name="Commandes" />
           </BarChart>
         </ResponsiveContainer>
       }
