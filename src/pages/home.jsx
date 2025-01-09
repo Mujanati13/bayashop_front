@@ -35,6 +35,8 @@ const PageHome = () => {
   const [error, setError] = useState(null);
   const [isCartModalVisible, setIsCartModalVisible] = useState(false);
   const [counter, setCounter] = useState(0);
+  const [showAllArticles, setShowAllArticles] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   // Search-related states
   const [searchQuery, setSearchQuery] = useState("");
@@ -126,36 +128,54 @@ const PageHome = () => {
   };
 
   // Open search modal with full results
-  const openSearchModal = () => {
+  const openSearchModal = (showAll = false, product = null) => {
+    setShowAllArticles(showAll);
+    if (product) {
+      setSearchResults([product]);
+      setSelectedProduct(product);
+    } else if (showAll) {
+      setSearchResults(articles);
+      setSelectedProduct(null);
+    }
     setIsSearchModalVisible(true);
   };
 
   // Close search modal
   const closeSearchModal = () => {
     setIsSearchModalVisible(false);
+    setSelectedProduct(null);
+    setSearchQuery("");
   };
 
-  // Render search suggestions dropdown
+  // Render search suggestions dropdown with modified click handler
   const SearchSuggestions = () => (
     <div className="bg-white rounded-lg max-h-80 overflow-y-auto w-96">
       {searchSuggestions.length > 0 ? (
-        searchSuggestions.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center p-2 hover:bg-gray-100 cursor-pointer w-full"
-            onClick={openSearchModal}
-          >
-            <img
-              src={Endpoint() + item.image}
-              alt={item.name}
-              className="w-12 h-12 object-cover mr-4 rounded"
-            />
-            <div>
-              <div className="font-semibold">{item.name}</div>
-              <div className="text-gray-500">{item.price}€</div>
+        searchSuggestions.map((item) => {
+          const fullArticle = articles.find(
+            (article) => article.ID_ART === item.id
+          );
+          return (
+            <div
+              key={item.id}
+              className="flex items-center p-2 hover:bg-gray-100 cursor-pointer w-full"
+              onClick={() => {
+                openSearchModal(false, fullArticle);
+                setSearchQuery("");
+              }}
+            >
+              <img
+                src={Endpoint() + item.image}
+                alt={item.name}
+                className="w-12 h-12 object-cover mr-4 rounded"
+              />
+              <div>
+                <div className="font-semibold">{item.name}</div>
+                <div className="text-gray-500">{item.price}€</div>
+              </div>
             </div>
-          </div>
-        ))
+          );
+        })
       ) : (
         <div className="p-2 text-gray-500">Aucun résultat</div>
       )}
@@ -165,13 +185,40 @@ const PageHome = () => {
   // Render search modal with results
   const SearchResultsModal = () => (
     <Modal
-      title={``}
+      title={
+        <div className="text-xl font-bold text-center">
+          {showAllArticles
+            ? "Notre collection"
+            : selectedProduct
+            ? selectedProduct.Nom
+            : "Résultats de recherche"}
+        </div>
+      }
       visible={isSearchModalVisible}
       onCancel={closeSearchModal}
       footer={null}
       width={800}
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="mb-4">
+        {!showAllArticles && !selectedProduct && (
+          <Input.Search
+            placeholder="Rechercher"
+            allowClear
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="w-full"
+            prefix={<SearchOutlined />}
+          />
+        )}
+      </div>
+
+      <div
+        className={`grid ${
+          selectedProduct
+            ? "grid-cols-1"
+            : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+        } gap-4`}
+      >
         {searchResults.map((article) => (
           <Article
             key={article.ID_ART}
@@ -183,7 +230,7 @@ const PageHome = () => {
           />
         ))}
       </div>
-      {searchResults.length === 0 && (
+      {!showAllArticles && searchResults.length === 0 && !selectedProduct && (
         <div className="text-center text-gray-500">Aucun résultat trouvé</div>
       )}
     </Modal>
@@ -525,7 +572,12 @@ const PageHome = () => {
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Les plats préparés sont prêts !
           </h2>
-          <button onClick={openSearchModal} className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
+          <button
+            onClick={() => {
+              openSearchModal(true);
+            }}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105"
+          >
             Voir la collection
           </button>
         </div>
