@@ -165,7 +165,7 @@ const PageHome = () => {
   // Render search modal with results
   const SearchResultsModal = () => (
     <Modal
-      title={`Résultats de recherche pour "${searchQuery}"`}
+      title={``}
       visible={isSearchModalVisible}
       onCancel={closeSearchModal}
       footer={null}
@@ -175,6 +175,7 @@ const PageHome = () => {
         {searchResults.map((article) => (
           <Article
             key={article.ID_ART}
+            id={article.ID_ART}
             name={article.Nom}
             Oldprice={article.AncienPrix || article.Prix}
             newPrice={article.Prix}
@@ -243,7 +244,7 @@ const PageHome = () => {
   // Existing sections (CategoriesSection, PromotionsSection, NewProductsSection)
   const CategoriesSection = () => (
     <div className="mt-5 p-5 text-lg font-semibold text-center">
-      <div>Catégories</div>
+      <div id="one">Catégories</div>
       <Carousel
         responsive={{
           desktop: {
@@ -308,7 +309,7 @@ const PageHome = () => {
 
     return (
       <div className="mt-5 p-5 text-lg font-semibold text-center">
-        <div>Promotions</div>
+        <div id="">Promotions</div>
         <Carousel
           responsive={responsive}
           infinite={false}
@@ -330,6 +331,9 @@ const PageHome = () => {
             .map((article) => (
               <div className="p-3" key={article.ID_ART}>
                 <Article
+                  key={article.ID_ART}
+                  id={article.ID_ART}
+                  id_art={article.ID_ART}
                   name={article.Nom}
                   Oldprice={article.AncienPrix || article.Prix}
                   newPrice={article.Prix}
@@ -364,7 +368,7 @@ const PageHome = () => {
 
     return (
       <div className="mt-5 p-5 text-lg font-semibold text-center">
-        <div>Nouveautés</div>
+        <div id="">Nouveautés</div>
         <Carousel
           responsive={responsive}
           infinite={false}
@@ -503,14 +507,16 @@ const PageHome = () => {
 
       {/* Desktop Navigation */}
       <nav className="bg-white border-b border-gray-200 py-4 mt-0 hidden md:block">
-        <ul className="flex justify-center space-x-30 sm:space-x-20">
-          <li>
-            <a href="#" className="text-blue-500 hover:text-blue-700">
+        {/* <ul className="flex justify-center space-x-30 sm:space-x-20">
+          <li className="flex space-x-5 items-center">
+            <a href="#one" className="text-blue-500 hover:text-blue-700">
               Promotions
             </a>
+            <a href="#Nouveautés" className="text-blue-500 hover:text-blue-700">
+              Nouveautés
+            </a>
           </li>
-          {/* ... other navigation items ... */}
-        </ul>
+        </ul> */}
       </nav>
 
       {/* Rest of the content */}
@@ -519,7 +525,7 @@ const PageHome = () => {
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Les plats préparés sont prêts !
           </h2>
-          <button className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
+          <button onClick={openSearchModal} className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105">
             Voir la collection
           </button>
         </div>

@@ -381,7 +381,7 @@ const CartModal = ({ visible, onClose }) => {
       setIsProcessing(false);
     }
   };
-  
+
   const calculateTotal = () => {
     let total = cart.total;
     if (selectedDelivery) {
@@ -593,12 +593,12 @@ const CartModal = ({ visible, onClose }) => {
               {renderCartItems()}
 
               <Card className="bg-gray-50">
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 w-96">
                   <Input
                     placeholder="Entrez votre code promo"
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
-                    className="flex-grow"
+                    className="flex-grow w-10"
                     disabled={isValidating || cart.discount}
                     prefix={<ShoppingCartOutlined />}
                     onPressEnter={handlePromoCodeValidation}
@@ -607,7 +607,7 @@ const CartModal = ({ visible, onClose }) => {
                     type="primary"
                     onClick={handlePromoCodeValidation}
                     loading={isValidating}
-                    disabled={cart.discount}
+                    disabled={promoCode.length > 0 ? false : true}
                   >
                     Appliquer
                   </Button>
@@ -763,14 +763,52 @@ const CartModal = ({ visible, onClose }) => {
                 name="city"
                 label="Ville"
                 rules={[
-                  { required: true, message: "Veuillez saisir votre ville" },
                   {
-                    min: 2,
-                    message: "La ville doit contenir au moins 2 caractères",
+                    required: true,
+                    message: "Veuillez sélectionner votre ville",
                   },
                 ]}
               >
-                <Input placeholder="Ville" maxLength={100} />
+                <select
+                  placeholder="Sélectionnez votre ville"
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #d9d9d9",
+                  }}
+                >
+                  <option value="">Sélectionnez votre ville</option>
+                  <option value="paris">Paris</option>
+                  <option value="marseille">Marseille</option>
+                  <option value="lyon">Lyon</option>
+                  <option value="toulouse">Toulouse</option>
+                  <option value="nice">Nice</option>
+                  <option value="nantes">Nantes</option>
+                  <option value="strasbourg">Strasbourg</option>
+                  <option value="montpellier">Montpellier</option>
+                  <option value="bordeaux">Bordeaux</option>
+                  <option value="lille">Lille</option>
+                  <option value="rennes">Rennes</option>
+                  <option value="reims">Reims</option>
+                  <option value="toulon">Toulon</option>
+                  <option value="grenoble">Grenoble</option>
+                  <option value="dijon">Dijon</option>
+                  <option value="angers">Angers</option>
+                  <option value="nîmes">Nîmes</option>
+                  <option value="saint-etienne">Saint-Étienne</option>
+                  <option value="le-havre">Le Havre</option>
+                  <option value="tours">Tours</option>
+                  <option value="clermont-ferrand">Clermont-Ferrand</option>
+                  <option value="amiens">Amiens</option>
+                  <option value="metz">Metz</option>
+                  <option value="besancon">Besançon</option>
+                  <option value="perpignan">Perpignan</option>
+                  <option value="orleans">Orléans</option>
+                  <option value="caen">Caen</option>
+                  <option value="mulhouse">Mulhouse</option>
+                  <option value="rouen">Rouen</option>
+                </select>
               </Form.Item>
             </Space>
 
@@ -837,8 +875,8 @@ const CartModal = ({ visible, onClose }) => {
 
   const modalFooter = [
     currentStep > 0 && (
-      <Button 
-        key="back" 
+      <Button
+        key="back"
         onClick={() => setCurrentStep(currentStep - 1)}
         icon={<CarOutlined className="rotate-180" />}
       >
@@ -846,17 +884,17 @@ const CartModal = ({ visible, onClose }) => {
       </Button>
     ),
     currentStep == 0 && (
-      <Button 
-        key="clear" 
+      <Button
+        key="clear"
         danger
         onClick={() => {
           Modal.confirm({
-            title: 'Vider le panier',
+            title: "Vider le panier",
             icon: <ExclamationCircleOutlined />,
-            content: 'Êtes-vous sûr de vouloir vider votre panier ?',
-            okText: 'Oui',
-            cancelText: 'Non',
-            onOk: clearCart
+            content: "Êtes-vous sûr de vouloir vider votre panier ?",
+            okText: "Oui",
+            cancelText: "Non",
+            onOk: clearCart,
           });
         }}
       >
@@ -890,12 +928,11 @@ const CartModal = ({ visible, onClose }) => {
       >
         Payer {calculateTotal().toFixed(2)}€
       </Button>
-    )
+    ),
   ].filter(Boolean);
 
   return (
     <Modal
-    
       title={
         <div className="flex items-center">
           <ShoppingCartOutlined className="mr-2 text-xl" />
