@@ -1,8 +1,12 @@
-import React, { createContext, useReducer, useContext, useEffect, useMemo } from "react";
+import React, {
+  createContext,
+  useReducer,
+  useContext,
+  useEffect,
+  useMemo,
+} from "react";
 import { message } from "antd";
 import { Endpoint } from "../../helper/enpoint";
-// import { Endpoint } from "../../helper/endpoint";
-Endpoint
 
 const initialState = {
   items: [],
@@ -11,7 +15,7 @@ const initialState = {
   discount: null,
   discountPercentage: 0,
   discountAmount: 0,
-  stockStatus: {}
+  stockStatus: {},
 };
 
 const ADD_TO_CART = "ADD_TO_CART";
@@ -36,16 +40,16 @@ const cartReducer = (state, action) => {
 
       const stockStatus = state.stockStatus[action.payload.id];
       const availableStock = stockStatus?.available || 0;
-      
+
       let updatedItems;
       if (existingItemIndex > -1) {
-        const newQuantity = state.items[existingItemIndex].quantity + action.payload.quantity;
-        
+        const newQuantity =
+          state.items[existingItemIndex].quantity + action.payload.quantity;
+
         if (newQuantity > availableStock) {
-          message.warning(`Stock insuffisant. Stock disponible: ${availableStock}`);
           return state;
         }
-        
+
         updatedItems = state.items.map((item, index) =>
           index === existingItemIndex
             ? { ...item, quantity: newQuantity }
@@ -53,10 +57,9 @@ const cartReducer = (state, action) => {
         );
       } else {
         if (action.payload.quantity > availableStock) {
-          message.warning(`Stock insuffisant. Stock disponible: ${availableStock}`);
           return state;
         }
-        
+
         updatedItems = [...state.items, action.payload];
       }
 
@@ -69,7 +72,7 @@ const cartReducer = (state, action) => {
         ...state,
         items: updatedItems,
         total: newTotal,
-        originalTotal: newOriginalTotal
+        originalTotal: newOriginalTotal,
       };
 
       localStorage.setItem("cart", JSON.stringify(cartData));
@@ -94,7 +97,7 @@ const cartReducer = (state, action) => {
         items: filteredItems,
         total: newTotal,
         originalTotal: newOriginalTotal,
-        stockStatus: newStockStatus
+        stockStatus: newStockStatus,
       };
 
       localStorage.setItem("cart", JSON.stringify(cartData));
@@ -104,9 +107,8 @@ const cartReducer = (state, action) => {
     case UPDATE_QUANTITY: {
       const { id, quantity } = action.payload;
       const stockStatus = state.stockStatus[id];
-      
+
       if (quantity > (stockStatus?.available || 0)) {
-        message.warning(`Stock insuffisant. Stock disponible: ${stockStatus?.available || 0}`);
         return state;
       }
 
@@ -123,7 +125,7 @@ const cartReducer = (state, action) => {
         ...state,
         items: updatedItems,
         total: newTotal,
-        originalTotal: newOriginalTotal
+        originalTotal: newOriginalTotal,
       };
 
       localStorage.setItem("cart", JSON.stringify(cartData));
@@ -136,7 +138,7 @@ const cartReducer = (state, action) => {
 
     case LOAD_CART_FROM_STORAGE:
       return {
-        ...action.payload
+        ...action.payload,
       };
 
     case APPLY_DISCOUNT: {
@@ -149,7 +151,7 @@ const cartReducer = (state, action) => {
         discount: code,
         discountPercentage: percentage,
         discountAmount: discountAmount,
-        total: newTotal
+        total: newTotal,
       };
 
       localStorage.setItem("cart", JSON.stringify(cartData));
@@ -162,7 +164,7 @@ const cartReducer = (state, action) => {
         discount: null,
         discountPercentage: 0,
         discountAmount: 0,
-        total: state.originalTotal
+        total: state.originalTotal,
       };
 
       localStorage.setItem("cart", JSON.stringify(cartData));
@@ -174,8 +176,8 @@ const cartReducer = (state, action) => {
         ...state,
         stockStatus: {
           ...state.stockStatus,
-          [action.payload.id]: action.payload.status
-        }
+          [action.payload.id]: action.payload.status,
+        },
       };
 
     default:
@@ -190,14 +192,16 @@ export const CartProvider = ({ children }) => {
 
   const checkStock = async (itemId, quantity) => {
     try {
-      const response = await fetch(`${Endpoint()}/articles/check-quantity/${itemId}/${quantity}`);
+      const response = await fetch(
+        `${Endpoint()}/articles/check-quantity/${itemId}/${quantity}`
+      );
       const data = await response.json();
-      
+
       dispatch({
         type: UPDATE_STOCK_STATUS,
-        payload: { id: itemId, status: data }
+        payload: { id: itemId, status: data },
       });
-      
+
       return data;
     } catch (error) {
       console.error("Error checking stock:", error);
@@ -206,44 +210,57 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const cartActions = useMemo(() => ({
-    addToCart: async (item) => {
-      const stockStatus = await checkStock(item.id, item.quantity || 1);
-      if (stockStatus?.isAvailable) {
+  const cartActions = useMemo(
+    () => ({
+      addToCart: async (item) => {
+        const stockStatus = await checkStock(item.id, item.quantity || 1);
+        const existingItem = state.items.find((i) => i.id === item.id);
+        const newQuantity = (existingItem?.quantity || 0) + (item.quantity || 1);
+        
+        if (stockStatus?.isAvailable) {
+          if (newQuantity > stockStatus.available) {
+            message.warning(
+              `Stock insuffisant. Stock disponible: ${stockStatus.available}`
+            );
+          } else {
+            dispatch({
+              type: ADD_TO_CART,
+              payload: {
+                ...item,
+                quantity: item.quantity || 1,
+              },
+            });
+            message.success("Produit ajouté au panier avec succès !");
+          }
+        } else {
+          message.warning(stockStatus?.message || "Stock insuffisant");
+        }
+      },
+      removeFromCart: (itemId) => {
+        dispatch({ type: REMOVE_FROM_CART, payload: itemId });
+      },
+      updateQuantity: async (itemId, quantity) => {
+        const stockStatus = await checkStock(itemId, quantity);
+        if (stockStatus?.isAvailable) {
+          dispatch({
+            type: UPDATE_QUANTITY,
+            payload: { id: itemId, quantity },
+          });
+        } else {
+          message.warning(stockStatus?.message || "Stock insuffisant");
+        }
+      },
+      clearCart: () => dispatch({ type: CLEAR_CART }),
+      applyDiscount: (discountDetails) => {
         dispatch({
-          type: ADD_TO_CART,
-          payload: {
-            ...item,
-            quantity: item.quantity || 1,
-          },
+          type: APPLY_DISCOUNT,
+          payload: discountDetails,
         });
-      } else {
-        message.warning(stockStatus?.message || "Stock insuffisant");
-      }
-    },
-    removeFromCart: (itemId) => {
-      dispatch({ type: REMOVE_FROM_CART, payload: itemId });
-    },
-    updateQuantity: async (itemId, quantity) => {
-      const stockStatus = await checkStock(itemId, quantity);
-      if (stockStatus?.isAvailable) {
-        dispatch({
-          type: UPDATE_QUANTITY,
-          payload: { id: itemId, quantity },
-        });
-      } else {
-        message.warning(stockStatus?.message || "Stock insuffisant");
-      }
-    },
-    clearCart: () => dispatch({ type: CLEAR_CART }),
-    applyDiscount: (discountDetails) => {
-      dispatch({
-        type: APPLY_DISCOUNT,
-        payload: discountDetails,
-      });
-    },
-    removeDiscount: () => dispatch({ type: REMOVE_DISCOUNT }),
-  }), []);
+      },
+      removeDiscount: () => dispatch({ type: REMOVE_DISCOUNT }),
+    }),
+    [state.items]
+  );
 
   useEffect(() => {
     const savedCart = localStorage.getItem("cart");
@@ -254,8 +271,8 @@ export const CartProvider = ({ children }) => {
           type: LOAD_CART_FROM_STORAGE,
           payload: parsedCart,
         });
-        
-        parsedCart.items.forEach(item => {
+
+        parsedCart.items.forEach((item) => {
           checkStock(item.id, item.quantity);
         });
       } catch (error) {
@@ -264,16 +281,17 @@ export const CartProvider = ({ children }) => {
     }
   }, []);
 
-  const contextValue = useMemo(() => ({
-    cart: state,
-    ...cartActions,
-    checkStock,
-  }), [state, cartActions]);
+  const contextValue = useMemo(
+    () => ({
+      cart: state,
+      ...cartActions,
+      checkStock,
+    }),
+    [state, cartActions]
+  );
 
   return (
-    <CartContext.Provider value={contextValue}>
-      {children}
-    </CartContext.Provider>
+    <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>
   );
 };
 

@@ -33,8 +33,94 @@ import { useCart } from "./cartReducer";
 import axios from "axios";
 import { Endpoint } from "../../helper/enpoint";
 import { toast } from "react-toastify";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 
 const { Title, Text } = Typography;
+
+const stripePromise = loadStripe("your_publishable_key_here");
+const StripePaymentForm = ({ amount, onSuccess, onError }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!stripe || !elements) {
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      // Create payment intent on your backend
+      const { data: clientSecret } = await axios.post(
+        Endpoint() + "/create-payment-intent",
+        {
+          amount: Math.round(amount * 100), // Convert to cents
+        }
+      );
+
+      // Confirm the payment with Stripe
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card: elements.getElement(CardElement),
+          },
+        }
+      );
+
+      if (error) {
+        onError(error.message);
+      } else if (paymentIntent.status === "succeeded") {
+        onSuccess(paymentIntent);
+      }
+    } catch (err) {
+      onError("An error occurred while processing your payment.");
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Card className="mb-4">
+        <CardElement
+          options={{
+            style: {
+              base: {
+                fontSize: "16px",
+                color: "#424770",
+                "::placeholder": {
+                  color: "#aab7c4",
+                },
+              },
+              invalid: {
+                color: "#9e2146",
+              },
+            },
+          }}
+        />
+      </Card>
+      <Button
+        type="primary"
+        htmlType="submit"
+        loading={isProcessing}
+        disabled={!stripe}
+        block
+      >
+        Pay {amount.toFixed(2)}€
+      </Button>
+    </form>
+  );
+};
 
 const CartModal = ({ visible, onClose }) => {
   const { cart, removeFromCart, updateQuantity, clearCart, applyDiscount } =
@@ -53,6 +139,67 @@ const CartModal = ({ visible, onClose }) => {
   const [retryCount, setRetryCount] = useState(0);
   const [isStockChecking, setIsStockChecking] = useState(false);
   const [stockStatus, setStockStatus] = useState({});
+
+  const handleStripePayment = async (paymentIntent) => {
+    try {
+      // Get cart details from local storage
+      const cartItems = JSON.parse(localStorage.getItem("cart") || "[]");
+
+      // Format order data
+      const orderData = {
+        id_clt: localStorage.getItem("userId") || null,
+        detail_cmd: JSON.stringify(cartItems),
+        details_de_command: JSON.stringify({
+          items: cartItems,
+          delivery: {
+            methodId: selectedDelivery,
+            method: deliveryMethods.find((d) => d.id === selectedDelivery),
+          },
+        }),
+        statut_CMD: "paid", // Update status to paid
+        montant: calculateTotal(),
+        mode_payement: "stripe",
+        payment_intent_id: paymentIntent.id, // Store Stripe payment intent ID
+        adresse_livraison: JSON.stringify({
+          fullName: form.getFieldValue("fullName"),
+          address: form.getFieldValue("address"),
+          city: form.getFieldValue("city"),
+          postalCode: form.getFieldValue("postalCode"),
+          phone: form.getFieldValue("phone"),
+          email: form.getFieldValue("email"),
+          additionalInfo: form.getFieldValue("additionalInfo"),
+        }),
+        code_promo: promoCode || null,
+      };
+
+      // Send order to API
+      const response = await axios.post(Endpoint() + "/command", orderData);
+
+      if (response.data.success) {
+        Modal.success({
+          title: "Payment successful!",
+          content:
+            "Your order has been placed successfully. You will receive a confirmation email shortly.",
+          onOk: () => {
+            clearCart();
+            form.resetFields();
+            setPromoCode("");
+            setSelectedDelivery(null);
+            setPaymentMethod(null);
+            setCurrentStep(0);
+            onClose();
+          },
+        });
+      }
+    } catch (error) {
+      Modal.error({
+        title: "Error",
+        content:
+          error.response?.data?.message ||
+          "An error occurred while processing your order.",
+      });
+    }
+  };
 
   useEffect(() => {
     if (visible) {
@@ -476,27 +623,45 @@ const CartModal = ({ visible, onClose }) => {
           className="w-full hover:shadow-md transition-shadow duration-300"
           hoverable
         >
-          <Radio value="card">
-            <Space>
+          <Radio className="w-full" value="stripe">
+            <Space className="w-full">
               <CreditCardOutlined className="text-2xl" />
-              <div>
+              <div className="w-full">
                 <Title level={5} className="mb-1">
-                  Carte bancaire
+                  Credit Card (Stripe)
                 </Title>
-                <Text type="secondary">Paiement sécurisé par carte</Text>
-                <div className="mt-2">
-                  <img
-                    src="/card-logos.png"
-                    alt="Accepted cards"
-                    className="h-6"
-                    onError={(e) => (e.target.style.display = "none")}
-                  />
-                </div>
+                <Text type="secondary">Secure payment via Stripe</Text>
+                {paymentMethod === "stripe" && (
+                  <div className="mt-4 w-full">
+                    <Elements
+                      className="w-full"
+                      style={{ width: "500px" }}
+                      stripe={stripePromise}
+                    >
+                      <div style={{width:"500px"}} className="w-full">
+                        <StripePaymentForm
+                          className="w-full"
+                          style={{ width: "500px" }}
+                          amount={calculateTotal()}
+                          onSuccess={handleStripePayment}
+                          onError={(message) => {
+                            Modal.error({
+                              title: "Payment Error",
+                              content: message,
+                            });
+                          }}
+                        />
+                      </div>
+                    </Elements>
+                  </div>
+                )}
               </div>
             </Space>
           </Radio>
         </Card>
-        <Card
+
+        {/* Keep existing PayPal option */}
+        {/* <Card
           className="w-full hover:shadow-md transition-shadow duration-300"
           hoverable
         >
@@ -514,11 +679,11 @@ const CartModal = ({ visible, onClose }) => {
                 <Title level={5} className="mb-1">
                   PayPal
                 </Title>
-                <Text type="secondary">Paiement sécurisé via PayPal</Text>
+                <Text type="secondary">Secure payment via PayPal</Text>
               </div>
             </Space>
           </Radio>
-        </Card>
+        </Card> */}
       </Space>
     </Radio.Group>
   );
@@ -866,8 +1031,8 @@ const CartModal = ({ visible, onClose }) => {
             showIcon
           />
 
-          {renderPaymentMethods()}
           {renderOrderSummary()}
+          {renderPaymentMethods()}
         </div>
       ),
     },
@@ -919,15 +1084,7 @@ const CartModal = ({ visible, onClose }) => {
         Continuer
       </Button>
     ) : (
-      <Button
-        key="submit"
-        type="primary"
-        onClick={() => form.submit()}
-        loading={isProcessing}
-        icon={<CreditCardOutlined />}
-      >
-        Payer {calculateTotal().toFixed(2)}€
-      </Button>
+     ""
     ),
   ].filter(Boolean);
 
