@@ -1,8 +1,15 @@
 import React from "react";
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 import Login from "./pages/login";
 import Home from "./pages/home";
 import DashboardPage from "./pages/dashboard";
+import SearchPage from "./components/home-client/searchFun";
+import { CartProvider } from "./components/home-client/cartReducer";
 
 function App() {
   const isAuthenticated = !!localStorage.getItem("token"); // Check if token exists
@@ -25,10 +32,24 @@ function App() {
           path="/home"
           element={true ? <Home /> : <Navigate to="/login" />}
         />
+        <Route
+          path="/collections"
+          element={
+            true ? (
+              <CartProvider>
+                <SearchPage />
+              </CartProvider>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
         {/* Protect /admin route */}
         <Route
           path="/admin"
-          element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />
+          }
         />
       </Routes>
     </Router>

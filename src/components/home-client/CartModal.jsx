@@ -323,13 +323,13 @@ const CartModal = ({ visible, onClose }) => {
   };
 
   const renderCartItems = () => {
-    if (isStockChecking) {
-      return (
-        <div className="text-center p-4">
-          <Spin tip="Vérification du stock..." />
-        </div>
-      );
-    }
+    // if (isStockChecking) {
+    //   return (
+    //     <div className="text-center p-4">
+    //       <Spin tip="Vérification du stock..." />
+    //     </div>
+    //   );
+    // }
 
     return cart.items.map((item) => {
       const itemStockStatus = stockStatus[item.id];

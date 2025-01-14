@@ -180,14 +180,14 @@ const Products = () => {
                     {selectedProductDetails.Prix}€
                   </span>
                 </div>
-                {selectedProductDetails.Promotion && (
+                {/* {selectedProductDetails.Promotion && (
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500">Ancien prix</span>
                     <span className="text-lg text-gray-400 line-through">
                       {selectedProductDetails.AncienPrix}€
                     </span>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
 
@@ -288,35 +288,43 @@ const Products = () => {
         setIsModalVisible(false);
         setCurrentProduct(null);
         setFileList([]);
-        form.setFieldValue(null);
+        form.resetFields();
       }}
       onOk={() => {
         form
           .validateFields()
           .then(async (values) => {
+            // Check if the condition is met before proceeding
+            if (values.Promotion && values.AncienPrix >= values.Prix) {
+              message.error("Le prix promotionnel doit être strictement inférieur au prix actuel.");
+              return;
+            }
+  
             let imageUrl = null;
             if (fileList.length > 0) {
-              const uploadResponse = await handleImageUpload({
-                file: fileList[0],
-              });
+              const uploadResponse = await handleImageUpload({ file: fileList[0] });
               imageUrl = uploadResponse.imageUrl;
             }
-
+  
             const productData = {
               ...values,
               Photo: imageUrl || currentProduct?.Photo,
               ID_ART: currentProduct?.ID_ART,
             };
-
-            currentProduct
-              ? updateProduct(productData)
-              : createProduct(productData);
+  
+            currentProduct ? updateProduct(productData) : createProduct(productData);
             setFileList([]);
           })
           .catch((error) => {
             console.error("Validation Failed:", error);
           });
       }}
+      // okButtonProps={{
+      //   disabled: form.getFieldValue("Promotion") &&
+      //     (form.getFieldValue("AncienPrix") === undefined ||
+      //      form.getFieldValue("Prix") === undefined ||
+      //      form.getFieldValue("AncienPrix") >= form.getFieldValue("Prix")),
+      // }}
     >
       <Form form={form} layout="vertical" initialValues={currentProduct || {}}>
         <Form.Item name="ImageUrl" label="Product Image">
@@ -343,19 +351,21 @@ const Products = () => {
             )}
           </Upload>
         </Form.Item>
-
+  
         <Form.Item name="Quantite" label="Quantité en Stock">
           <Input type="number" min={0} />
         </Form.Item>
-
+  
         <Form.Item name="Promotion" valuePropName="checked" label="Promotion">
           <Switch />
         </Form.Item>
-
+  
         <Form.Item
           noStyle
           shouldUpdate={(prevValues, currentValues) =>
-            prevValues.Promotion !== currentValues.Promotion
+            prevValues.Promotion !== currentValues.Promotion ||
+            prevValues.Prix !== currentValues.Prix ||
+            prevValues.AncienPrix !== currentValues.AncienPrix
           }
         >
           {({ getFieldValue }) =>
@@ -368,11 +378,9 @@ const Products = () => {
                   ({ getFieldValue }) => ({
                     validator(_, value) {
                       const currentPrice = getFieldValue("Prix");
-                      if (value && value === currentPrice) {
+                      if (value && parseFloat(value) >= parseFloat(currentPrice)) {
                         return Promise.reject(
-                          new Error(
-                            "Le prix promotionnel doit être différent du prix actuel"
-                          )
+                          new Error("Le prix promotionnel doit être strictement inférieur au prix actuel")
                         );
                       }
                       return Promise.resolve();
@@ -385,15 +393,11 @@ const Products = () => {
             ) : null
           }
         </Form.Item>
-
-        <Form.Item
-          name="Visible"
-          valuePropName="checked"
-          label="Visible sur le site"
-        >
+  
+        <Form.Item name="Visible" valuePropName="checked" label="Visible sur le site">
           <Switch />
         </Form.Item>
-
+  
         <Form.Item
           name="Nom"
           label="Nom du Produit"
@@ -401,11 +405,11 @@ const Products = () => {
         >
           <Input />
         </Form.Item>
-
+  
         <Form.Item name="Description" label="Description">
           <Input.TextArea />
         </Form.Item>
-
+  
         <Form.Item
           name="Prix"
           label="Prix"
@@ -413,13 +417,15 @@ const Products = () => {
         >
           <Input type="number" step="0.01" />
         </Form.Item>
+  
         <Form.Item
           name="Alertes Min"
           label="AlertesMin"
-          rules={[{ required: true, message: "Prix requis" }]}
+          rules={[{ required: true, message: "AlertesMin requis" }]}
         >
           <Input type="number" step="0.01" />
         </Form.Item>
+  
         <Form.Item
           name="ID_CAT"
           label="Catégorie"
@@ -436,6 +442,9 @@ const Products = () => {
       </Form>
     </Modal>
   );
+  
+  
+  
 
   return (
     <Card

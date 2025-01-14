@@ -9,7 +9,7 @@ import {
   LeftOutlined,
   RightOutlined,
 } from "@ant-design/icons";
-import { Input, Popover, Modal, Badge } from "antd";
+import { Input, Popover, Modal, Badge, Drawer } from "antd";
 import axios from "axios";
 import Article from "../components/home-client/article";
 import ImageCarousel from "../components/home-client/image";
@@ -23,6 +23,8 @@ import CartModal from "../components/home-client/CartModal";
 import { CartProvider } from "../components/home-client/cartReducer";
 const DEFAULT_PRODUCT_IMAGE = "/default-product.jpg";
 import { useCart } from "../components/home-client/cartReducer";
+import SearchPage from "../components/home-client/searchFun";
+import { Link } from "react-router-dom";
 
 const API_BASE_URL = Endpoint(); // Replace with your actual API base URL
 
@@ -183,58 +185,32 @@ const PageHome = () => {
   );
 
   // Render search modal with results
-  const SearchResultsModal = () => (
-    <Modal
-      title={
-        <div className="text-xl font-bold text-center">
-          {showAllArticles
-            ? "Notre collection"
-            : selectedProduct
-            ? selectedProduct.Nom
-            : "Résultats de recherche"}
-        </div>
-      }
-      visible={isSearchModalVisible}
-      onCancel={closeSearchModal}
-      footer={null}
-      width={800}
-    >
-      <div className="mb-4">
-        {!showAllArticles && !selectedProduct && (
-          <Input.Search
-            placeholder="Rechercher"
-            allowClear
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="w-full"
-            prefix={<SearchOutlined />}
-          />
-        )}
-      </div>
+  const SearchResultsModal = () => {
+    const handleCloseModal = () => {
+      closeSearchModal(); // Your existing close modal function
+    };
 
-      <div
-        className={`grid ${
-          selectedProduct
-            ? "grid-cols-1"
-            : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-        } gap-4`}
+    return (
+      <Drawer
+        title={
+          <div className="text-xl font-bold text-center">
+            {showAllArticles
+              ? "Notre collection"
+              : selectedProduct
+              ? selectedProduct.Nom
+              : "Résultats de recherche"}
+          </div>
+        }
+        open={isSearchModalVisible}
+        onCancel={handleCloseModal}
+        footer={null}
+        width={800}
+        maskClosable={true} // Allow closing when clicking outside
       >
-        {searchResults.map((article) => (
-          <Article
-            key={article.ID_ART}
-            id={article.ID_ART}
-            name={article.Nom}
-            Oldprice={article.AncienPrix || article.Prix}
-            newPrice={article.Prix}
-            image={article.Photo || DEFAULT_PRODUCT_IMAGE}
-          />
-        ))}
-      </div>
-      {!showAllArticles && searchResults.length === 0 && !selectedProduct && (
-        <div className="text-center text-gray-500">Aucun résultat trouvé</div>
-      )}
-    </Modal>
-  );
+        <SearchPage />
+      </Drawer>
+    );
+  };
 
   // Toggle side menu (existing code)
   const toggleSideMenu = () => {
@@ -572,14 +548,16 @@ const PageHome = () => {
           <h2 className="text-2xl md:text-3xl font-bold mb-4">
             Les plats préparés sont prêts !
           </h2>
-          <button
-            onClick={() => {
-              openSearchModal(true);
-            }}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105"
-          >
-            Voir la collection
-          </button>
+          <Link to={"/collections"}>
+            <button
+              // onClick={() => {
+              //   openSearchModal(true);
+              // }}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition duration-300 ease-in-out transform hover:scale-105"
+            >
+              Voir la collection
+            </button>
+          </Link>
         </div>
         <div className="w-full md:w-[65%] mb-4 md:mb-0">
           <ImageCarousel />

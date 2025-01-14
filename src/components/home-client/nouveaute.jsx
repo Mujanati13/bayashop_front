@@ -39,21 +39,15 @@ const PopoverContent = React.memo(
 
       <div className="flex items-center space-x-2 mb-3">
         <div className="flex-1">
-          <InputNumber
+          {/* <InputNumber
             min={1}
             max={stockStatus.available || 1}
             value={quantity}
             onChange={onQuantityChange}
             className="w-20 mr-2"
-          />
+          /> */}
           {renderButton("flex-1")}
         </div>
-        <button
-          className="bg-gray-200 text-gray-700 p-2 rounded hover:bg-gray-300"
-          title="Favoris"
-        >
-          <HeartOutlined />
-        </button>
       </div>
 
       <div className="border-t pt-3 mt-3">
@@ -64,14 +58,15 @@ const PopoverContent = React.memo(
           <span
             className={`text-green-600 font-semibold text-xs sm:text-sm ${
               stockStatus.available === 0
-                // ? "text-red-600"
-                // : !stockStatus.isAvailable
-                // ? "text-
-                // -600"
-                
+              // ? "text-red-600"
+              // : !stockStatus.isAvailable
+              // ? "text-
+              // -600"
             }`}
           >
-            {stockStatus.message}
+            <Popover title={stockStatus.message}>
+              {stockStatus.message.slice(0, 20)}
+            </Popover>
           </span>
         </div>
         {stockStatus.isAvailable && (
@@ -264,7 +259,6 @@ const Nouveaute = React.memo(
             quantity: localState.quantity,
           });
 
-
           setTimeout(() => {
             setLocalState((prev) => ({
               ...prev,
@@ -285,10 +279,10 @@ const Nouveaute = React.memo(
     const renderButton = (additionalClasses = "") => (
       <button
         onClick={handleAddToCart}
-        className={` bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white py-1.5 sm:py-2 rounded-md transition-all duration-300 ease-in-out text-xs sm:text-sm ${additionalClasses} ${localState.isSuccess}`}
+        className={`p-2 mt-2 bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white py-1.5 sm:py-2 rounded-md transition-all duration-300 ease-in-out text-xs sm:text-sm ${additionalClasses} ${localState.isSuccess}`}
       >
         <>
-          {/* <CheckOutlined className="mr-2" /> */}
+          <ShoppingCartOutlined className="mr-2" />
           {localState.buttonText}
         </>
       </button>

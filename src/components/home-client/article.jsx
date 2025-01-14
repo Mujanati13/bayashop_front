@@ -46,22 +46,17 @@ const PopoverContent = React.memo(
 
       <div className="flex items-center space-x-2 mb-3">
         <div className="flex-1">
-          <InputNumber
+          {/* <InputNumber
             min={1}
             max={stockStatus.available || 1}
             value={quantity}
             onChange={onQuantityChange}
             className="w-20 mr-2"
             disabled={!stockStatus.isAvailable}
-          />
+          /> */}
           {renderButton("flex-1")}
         </div>
-        <button
-          className="bg-gray-200 text-gray-700 p-2 rounded hover:bg-gray-300"
-          title="Ajouter aux favoris"
-        >
-          <HeartOutlined />
-        </button>
+       
       </div>
 
       <div className="border-t pt-3 mt-3">
@@ -74,7 +69,7 @@ const PopoverContent = React.memo(
               stockStatus.available === 0
             }`}
           >
-            {stockStatus.message}
+            {stockStatus.message.slice(0, 20)}
           </span>
         </div>
         {stockStatus.isAvailable && (
@@ -107,6 +102,7 @@ const Article = React.memo(
     id,
     ratings = 4,
     totalReviews = 128,
+    onClick
   }) => {
     const [isHovered, setIsHovered] = useState(false);
     const [buttonText, setButtonText] = useState(FRENCH_MESSAGES.addToCart);
@@ -221,11 +217,11 @@ const Article = React.memo(
           });
 
           // message.success("Produit ajouté au panier avec succès !");
-
-          setTimeout(() => {
-            setIsSuccess(false);
-            setButtonText(FRENCH_MESSAGES.addToCart);
-          }, 2000);
+          // onClick()
+          // setTimeout(() => {
+          //   setIsSuccess(false);
+          //   setButtonText(FRENCH_MESSAGES.addToCart);
+          // }, 2000);
         }
       },
       [checkQuantity, quantity, addToCart, id, name, newPrice, image]
@@ -243,7 +239,7 @@ const Article = React.memo(
         <button
           onClick={handleAddToCart}
           disabled={isLoading || !stockStatus.isAvailable}
-          className={`bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white py-1.5 sm:py-2 rounded-md transition-all duration-300 ease-in-out text-xs sm:text-sm ${additionalClasses} ${isSuccess}`}
+          className={`mt-2 p-2 bg-blue-500 hover:bg-blue-600 flex items-center justify-center text-white py-1.5 sm:py-2 rounded-md transition-all duration-300 ease-in-out text-xs sm:text-sm ${additionalClasses} ${isSuccess}`}
         >
           <ShoppingCartOutlined className="mr-2" />
           {buttonText}
@@ -326,14 +322,14 @@ const Article = React.memo(
             </div>
 
             <div className="flex items-center space-x-2">
-              <InputNumber
+              {/* <InputNumber
                 min={1}
                 max={stockStatus.available || 1}
                 value={quantity}
                 onChange={handleQuantityChange}
                 className="w-20"
                 // disabled={!stockStatus.isAvailable}
-              />
+              /> */}
               {renderButton("flex-1")}
             </div>
           </div>

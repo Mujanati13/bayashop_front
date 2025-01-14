@@ -434,9 +434,9 @@ const DashboardPlus = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <StatCard
             title="Revenue Total"
-            value={`${
-              monthlySales?.summary?.total_annual_revenue?.toLocaleString() || 0
-            }€`}
+            value={`${Number(monthlySales?.summary?.total_annual_revenue || 0)
+              .toFixed(2)
+              .toLocaleString()}€`}
             icon={<DollarSign className="w-6 h-6" />}
             // trend={calculateTrend(revenueStats.current, revenueStats.previous)}
           />
