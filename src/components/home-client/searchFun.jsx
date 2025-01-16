@@ -263,12 +263,15 @@ const SearchPage = () => {
         {/* Main Content */}
         <div className="container mx-auto p-4 sm:p-6 lg:p-8 mt-0">
           {/* Search and filter controls */}
-          <Link to={"/home"}>
-            <div className="flex items-center space-x-2">
-              <BackwardOutlined />
-              <div className="text-blue-600">Retour à la page d'accueil</div>
-            </div>
-          </Link>
+          <div className="flex items-center space-x-10">
+            <Link to={"/home"}>
+              <div className="flex items-center space-x-2">
+                <BackwardOutlined />
+                <div className="text-blue-600">Retour à la page d'accueil</div>
+              </div>
+            </Link>
+            <h3 className="text-center">Nos Collections</h3>
+          </div>
           <div className="mt-5 flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-grow md:hidden">
               <Input.Search

@@ -37,7 +37,6 @@ const Products = () => {
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [selectedProductDetails, setSelectedProductDetails] = useState(null);
 
-  // Form instance
   const [form] = Form.useForm();
 
   // Fetch Products
@@ -114,11 +113,70 @@ const Products = () => {
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      message.success("Image uploaded successfully");
+      message.success("Image téléchargée avec succès");
       return response.data;
     } catch (error) {
-      message.error("Image upload failed");
+      message.error("Échec du téléchargement de l'image");
       console.error(error);
+    }
+  };
+
+  // Form submission handler with field focus
+  const handleFormSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      
+      // Validation for promotion price
+      if (values.Promotion && values.AncienPrix >= values.Prix) {
+        form.setFields([
+          {
+            name: 'AncienPrix',
+            errors: ['Le prix promotionnel doit être strictement inférieur au prix actuel'],
+          },
+        ]);
+        // Focus on AncienPrix field
+        const ancienPrixInput = document.querySelector('input[id="AncienPrix"]');
+        if (ancienPrixInput) {
+          ancienPrixInput.focus();
+        }
+        return;
+      }
+
+      // Handle image upload
+      let imageUrl = null;
+      if (fileList.length > 0) {
+        const uploadResponse = await handleImageUpload({ file: fileList[0] });
+        imageUrl = uploadResponse.imageUrl;
+      }
+
+      const productData = {
+        ...values,
+        Photo: imageUrl || currentProduct?.Photo,
+        ID_ART: currentProduct?.ID_ART,
+      };
+
+      if (currentProduct) {
+        await updateProduct(productData);
+      } else {
+        await createProduct(productData);
+      }
+
+      setFileList([]);
+      setIsModalVisible(false);
+      form.resetFields();
+
+    } catch (errorInfo) {
+      // Focus on first error field
+      const firstErrorField = errorInfo.errorFields[0]?.name[0];
+      if (firstErrorField) {
+        const errorInput = document.querySelector(`input[id="${firstErrorField}"], textarea[id="${firstErrorField}"], select[id="${firstErrorField}"]`);
+        if (errorInput) {
+          errorInput.focus();
+          if (errorInput.scrollIntoView) {
+            errorInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+      }
     }
   };
 
@@ -180,14 +238,14 @@ const Products = () => {
                     {selectedProductDetails.Prix}€
                   </span>
                 </div>
-                {/* {selectedProductDetails.Promotion && (
+                {selectedProductDetails.Promotion && (
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500">Ancien prix</span>
                     <span className="text-lg text-gray-400 line-through">
                       {selectedProductDetails.AncienPrix}€
                     </span>
                   </div>
-                )} */}
+                )}
               </div>
             </div>
 
@@ -246,7 +304,7 @@ const Products = () => {
                   : "bg-gray-50 text-gray-600 border border-gray-200"
               }`}
             >
-              <EyeOutlined className="w-5 h-5 mr-2" />{" "}
+              <EyeOutlined className="w-5 h-5 mr-2" />
               <span>
                 Visibilité{" "}
                 {selectedProductDetails.Visible ? "Active" : "Inactive"}
@@ -290,44 +348,27 @@ const Products = () => {
         setFileList([]);
         form.resetFields();
       }}
-      onOk={() => {
-        form
-          .validateFields()
-          .then(async (values) => {
-            // Check if the condition is met before proceeding
-            if (values.Promotion && values.AncienPrix >= values.Prix) {
-              message.error("Le prix promotionnel doit être strictement inférieur au prix actuel.");
-              return;
-            }
-  
-            let imageUrl = null;
-            if (fileList.length > 0) {
-              const uploadResponse = await handleImageUpload({ file: fileList[0] });
-              imageUrl = uploadResponse.imageUrl;
-            }
-  
-            const productData = {
-              ...values,
-              Photo: imageUrl || currentProduct?.Photo,
-              ID_ART: currentProduct?.ID_ART,
-            };
-  
-            currentProduct ? updateProduct(productData) : createProduct(productData);
-            setFileList([]);
-          })
-          .catch((error) => {
-            console.error("Validation Failed:", error);
-          });
-      }}
-      // okButtonProps={{
-      //   disabled: form.getFieldValue("Promotion") &&
-      //     (form.getFieldValue("AncienPrix") === undefined ||
-      //      form.getFieldValue("Prix") === undefined ||
-      //      form.getFieldValue("AncienPrix") >= form.getFieldValue("Prix")),
-      // }}
+      onOk={handleFormSubmit}
     >
-      <Form form={form} layout="vertical" initialValues={currentProduct || {}}>
-        <Form.Item name="ImageUrl" label="Product Image">
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={currentProduct || {}}
+        onFieldsChange={(changedFields, allFields) => {
+          // Clear errors when user starts typing
+          if (changedFields.length > 0) {
+            const fieldName = changedFields[0].name[0];
+            form.setFields([
+              {
+                name: fieldName,
+                errors: [],
+              },
+            ]);
+          }
+        }}
+      >
+        {/* Image Upload */}
+        <Form.Item name="ImageUrl" label="Image du Produit">
           <Upload
             listType="picture-card"
             fileList={fileList}
@@ -346,26 +387,32 @@ const Products = () => {
             {fileList.length >= 1 ? null : (
               <div>
                 <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Upload</div>
+                <div style={{ marginTop: 8 }}>Télécharger</div>
               </div>
             )}
           </Upload>
         </Form.Item>
-  
-        <Form.Item name="Quantite" label="Quantité en Stock">
+
+        {/* Quantité */}
+        <Form.Item
+          name="Quantite"
+          label="Quantité en Stock"
+          rules={[{ required: true, message: 'La quantité est requise' }]}
+        >
           <Input type="number" min={0} />
         </Form.Item>
-  
+
+        {/* Promotion Switch */}
         <Form.Item name="Promotion" valuePropName="checked" label="Promotion">
           <Switch />
         </Form.Item>
-  
+
+        {/* Ancien Prix (Conditional) */}
         <Form.Item
           noStyle
           shouldUpdate={(prevValues, currentValues) =>
             prevValues.Promotion !== currentValues.Promotion ||
-            prevValues.Prix !== currentValues.Prix ||
-            prevValues.AncienPrix !== currentValues.AncienPrix
+            prevValues.Prix !== currentValues.Prix
           }
         >
           {({ getFieldValue }) =>
@@ -374,7 +421,7 @@ const Products = () => {
                 name="AncienPrix"
                 label="Prix Avant Promotion"
                 rules={[
-                  { required: true, message: "Prix avant promotion requis" },
+                  { required: true, message: "Le prix avant promotion est requis" },
                   ({ getFieldValue }) => ({
                     validator(_, value) {
                       const currentPrice = getFieldValue("Prix");
@@ -393,45 +440,67 @@ const Products = () => {
             ) : null
           }
         </Form.Item>
-  
-        <Form.Item name="Visible" valuePropName="checked" label="Visible sur le site">
+
+{/* Visible Switch */}
+<Form.Item name="Visible" valuePropName="checked" label="Visible sur le site">
           <Switch />
         </Form.Item>
-  
+
+        {/* Nom */}
         <Form.Item
           name="Nom"
           label="Nom du Produit"
-          rules={[{ required: true, message: "Nom requis" }]}
+          rules={[{ required: true, message: "Le nom est requis" }]}
         >
           <Input />
         </Form.Item>
-  
-        <Form.Item name="Description" label="Description">
-          <Input.TextArea />
+
+        {/* Description */}
+        <Form.Item 
+          name="Description" 
+          label="Description"
+          rules={[{ required: true, message: "La description est requise" }]}
+        >
+          <Input.TextArea rows={4} />
         </Form.Item>
-  
+
+        {/* Prix */}
         <Form.Item
           name="Prix"
           label="Prix"
-          rules={[{ required: true, message: "Prix requis" }]}
+          rules={[
+            { required: true, message: "Le prix est requis" },
+            // { type: 'number',  message: 'Le prix doit être supérieur à 0' }
+          ]}
         >
-          <Input type="number" step="0.01" />
+          <Input type="number" step="0.01" min="0" />
         </Form.Item>
-  
+
+        {/* Alertes Min */}
         <Form.Item
           name="Alertes Min"
-          label="AlertesMin"
-          rules={[{ required: true, message: "AlertesMin requis" }]}
+          label="Seuil d'Alerte Stock"
+          rules={[
+            { required: true, message: "Le seuil d'alerte est requis" },
+            // { type: 'number',  message: 'Le seuil doit être supérieur ou égal à 0' }
+          ]}
         >
-          <Input type="number" step="0.01" />
+          <Input type="number" min="0" />
         </Form.Item>
-  
+
+        {/* Catégorie */}
         <Form.Item
           name="ID_CAT"
           label="Catégorie"
-          rules={[{ required: true, message: "Catégorie requise" }]}
+          rules={[{ required: true, message: "La catégorie est requise" }]}
         >
-          <Select>
+          <Select
+            placeholder="Sélectionnez une catégorie"
+            showSearch
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+          >
             {categories.map((cat) => (
               <Select.Option key={cat.ID_CAT} value={cat.ID_CAT}>
                 {cat.Nom}
@@ -442,20 +511,22 @@ const Products = () => {
       </Form>
     </Modal>
   );
-  
-  
-  
 
+  // Main component render
   return (
     <Card
-      title="Gestion des Produits"
+      title={
+        <span className="text-lg font-bold">
+          Gestion des Produits
+        </span>
+      }
       extra={
         <Button
           type="primary"
           onClick={() => {
             setCurrentProduct(null);
             setIsModalVisible(true);
-            form.setFieldValue(null);
+            form.resetFields();
           }}
         >
           <PlusOutlined /> Nouveau Produit
@@ -466,60 +537,101 @@ const Products = () => {
         pagination={{
           defaultPageSize: 5,
           showSizeChanger: true,
-          pageSizeOptions: ["10", "20", "30"],
+          pageSizeOptions: ["5", "10", "20", "30"],
+          showTotal: (total, range) => `${range[0]}-${range[1]} sur ${total} produits`,
         }}
-        size="small"
+        size="middle"
         loading={loading}
         columns={[
-          { title: "Nom", dataIndex: "Nom", key: "Nom" },
+          { 
+            title: "Nom",
+            dataIndex: "Nom",
+            key: "Nom",
+            sorter: (a, b) => a.Nom.localeCompare(b.Nom),
+          },
           {
             title: "Catégorie",
             dataIndex: "ID_CAT",
             key: "ID_CAT",
             render: (categoryId) => {
-              const category = categories.find(
-                (cat) => cat.ID_CAT === categoryId
-              );
+              const category = categories.find((cat) => cat.ID_CAT === categoryId);
               return category ? category.Nom : "Non catégorisé";
             },
+            filters: categories.map(cat => ({
+              text: cat.Nom,
+              value: cat.ID_CAT,
+            })),
+            onFilter: (value, record) => record.ID_CAT === value,
           },
           {
             title: "Prix",
             dataIndex: "Prix",
             key: "Prix",
             render: (price, record) => {
-              return record.Promotion
-                ? `${price} € (Promo: ${record.AncienPrix} €)`
-                : `${price} €`;
+              return (
+                <div>
+                  <span className="font-medium">{Number(price).toFixed(2)} €</span>
+                  {record.Promotion && (
+                    <div className="text-sm text-gray-500 line-through">
+                      {Number(record.AncienPrix).toFixed(2)} €
+                    </div>
+                  )}
+                </div>
+              );
             },
+            sorter: (a, b) => a.Prix - b.Prix,
           },
           {
             title: "Stock",
             dataIndex: "Quantite",
             key: "Quantite",
+            render: (quantity) => (
+              <span className={`${quantity <= 10 ? 'text-red-500' : 'text-green-500'}`}>
+                {quantity}
+              </span>
+            ),
+            sorter: (a, b) => a.Quantite - b.Quantite,
           },
           {
             title: "Promotion",
             dataIndex: "Promotion",
             key: "Promotion",
-            render: (promotion) => (promotion ? "Oui" : "Non"),
+            render: (promotion) => (
+              <span className={`${promotion ? 'text-green-500' : 'text-gray-500'}`}>
+                {promotion ? "Oui" : "Non"}
+              </span>
+            ),
+            filters: [
+              { text: "Oui", value: true },
+              { text: "Non", value: false },
+            ],
+            onFilter: (value, record) => record.Promotion === value,
           },
           {
             title: "Visible",
             dataIndex: "Visible",
             key: "Visible",
-            render: (visible) => (visible ? "Oui" : "Non"),
+            render: (visible) => (
+              <span className={`${visible ? 'text-green-500' : 'text-gray-500'}`}>
+                {visible ? "Oui" : "Non"}
+              </span>
+            ),
+            filters: [
+              { text: "Oui", value: true },
+              { text: "Non", value: false },
+            ],
+            onFilter: (value, record) => record.Visible === value,
           },
           {
             title: "Actions",
             key: "actions",
+            width: 200,
             render: (_, record) => (
-              <div>
+              <div className="space-x-2">
                 <Button
                   type="default"
                   icon={<EyeOutlined />}
                   onClick={() => showProductDetails(record)}
-                  className="mr-2"
                   title="Voir les détails"
                 />
                 <Button
@@ -527,25 +639,33 @@ const Products = () => {
                   icon={<EditOutlined />}
                   onClick={() => {
                     setCurrentProduct(record);
-                    if (record.photo) {
+                    if (record.Photo) {
                       setFileList([
                         {
                           uid: "-1",
                           name: "image.png",
                           status: "done",
-                          url: record.photo,
+                          url: Endpoint() + record.Photo,
                         },
                       ]);
                     }
                     form.setFieldsValue(record);
                     setIsModalVisible(true);
                   }}
-                  className="mr-2"
                 />
                 <Button
-                  type="danger"
+                  danger
                   icon={<DeleteOutlined />}
-                  onClick={() => deleteProduct(record.ID_ART)}
+                  onClick={() => {
+                    Modal.confirm({
+                      title: "Confirmer la suppression",
+                      content: "Êtes-vous sûr de vouloir supprimer ce produit ?",
+                      okText: "Oui",
+                      okType: "danger",
+                      cancelText: "Non",
+                      onOk: () => deleteProduct(record.ID_ART),
+                    });
+                  }}
                 />
               </div>
             ),
