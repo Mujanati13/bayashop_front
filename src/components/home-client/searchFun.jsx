@@ -282,13 +282,13 @@ const SearchPage = () => {
               />
             </div>
 
-            <Button
+            {/* <Button
               size="large"
               icon={<FilterOutlined />}
               onClick={() => setFiltersVisible(true)}
             >
               Filtres
-            </Button>
+            </Button> */}
 
             <select
               className="border rounded-md px-4 py-2"
