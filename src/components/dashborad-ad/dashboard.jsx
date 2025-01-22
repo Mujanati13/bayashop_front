@@ -467,9 +467,7 @@ const DashboardPlus = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <StatCard
             title="Revenue Total"
-            value={`${Number(monthlySales?.summary?.total_annual_revenue || 0)
-              .toFixed(2)
-              .toLocaleString()}€`}
+            value={`${String(monthlySales?.summary?.total_annual_revenue).replace(0 , '').split(".")[0]}€`}
             icon={<DollarSign className="w-6 h-6" />}
             // trend={calculateTrend(revenueStats.current, revenueStats.previous)}
           />
@@ -498,14 +496,16 @@ const DashboardPlus = () => {
             icon={<Archive className="w-6 h-6" />}
             trend="Actif"
           />
-          <div onClick={scrollToLowStock} style={{ cursor: "pointer" }}>
-            <StatCard
-              title="Stock Faible"
-              value={lowStock.length}
-              icon={<AlertTriangle className="w-6 h-6 text-red-500" />}
-              warning={true}
-            />
-          </div>
+          {
+            lowStock.length > 0 ? (<div onClick={scrollToLowStock} style={{ cursor: "pointer" }}>
+              <StatCard
+                title="Stock Faible"
+                value={lowStock.length}
+                icon={<AlertTriangle className="w-6 h-6 text-red-500" />}
+                warning={true}
+              />
+            </div>) : ""
+          }
         </div>
 
         <Charts
