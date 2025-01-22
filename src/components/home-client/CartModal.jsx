@@ -44,7 +44,7 @@ import {
 
 const { Title, Text } = Typography;
 
-const stripePromise = loadStripe("your_publishable_key_here");
+const stripePromise = loadStripe("pk_test_51QXPkfRopiKWd621osrqQgkAVmkcXdFXIgqySmURSpl3xd2uIYG9q5o2p44d0D8TX7OQY3bxEvnW5HAokfeLWVuP00aT1gCRkc");
 const StripePaymentForm = ({ amount, onSuccess, onError }) => {
   const stripe = useStripe();
   const elements = useElements();
@@ -58,6 +58,7 @@ const StripePaymentForm = ({ amount, onSuccess, onError }) => {
     }
 
     setIsProcessing(true);
+    
 
     try {
       // Create payment intent on your backend
@@ -91,7 +92,7 @@ const StripePaymentForm = ({ amount, onSuccess, onError }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit()}>
       <Card className="mb-4">
         <CardElement
           options={{

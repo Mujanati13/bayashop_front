@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback , useRef } from "react";
 import {
   ResponsiveContainer,
   CartesianGrid,
@@ -53,29 +53,44 @@ const OrdersVisualization = ({ commandSales }) => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="date" angle={-45} textAnchor="end" height={60} />
             <YAxis yAxisId="left" />
-            <YAxis yAxisId="right" orientation="right" />
-            <Tooltip />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tickFormatter={(value) => `${value}€`}
+            />
+            <Tooltip
+              formatter={(value, name) => {
+                return name === "Montant Total" ? `${value}€` : value;
+              }}
+            />
             <Legend />
             <Line
               yAxisId="left"
               type="monotone"
-              dataKey="completed"
-              stroke="#82ca9d"
-              name="Complétées"
-            />
-            <Line
-              yAxisId="left"
-              type="monotone"
               dataKey="pending"
-              stroke="#8884d8"
+              stroke="#ffa726"
               name="En attente"
             />
             <Line
               yAxisId="left"
               type="monotone"
+              dataKey="completed"
+              stroke="#66bb6a"
+              name="Livrée"
+            />
+            <Line
+              yAxisId="left"
+              type="monotone"
               dataKey="cancelled"
-              stroke="#ff8042"
-              name="Annulées"
+              stroke="#ef5350"
+              name="Annulée"
+            />
+            <Line
+              yAxisId="left"
+              type="monotone"
+              dataKey="totalOrders"
+              stroke="#42a5f5"
+              name="Total Commandes"
             />
             <Line
               yAxisId="right"
@@ -268,26 +283,30 @@ const RecentOrders = ({ orders }) => (
 const LowStockAlert = ({ items }) => (
   <div className="bg-white rounded-lg shadow">
     <div className="p-6 border-b border-gray-200">
-      <h2 className="text-lg font-semibold">Alertes de Stock Faible</h2>
+      <a href="#stock">
+        <h2 className="text-lg font-semibold">Alertes de Stock Faible</h2>
+      </a>
     </div>
     <div className="p-6 space-y-4">
-      {items.map((item) => (
-        <div
-          key={item.ID_ART}
-          className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-4"
-        >
-          <div>
-            <p className="font-medium">{item.Nom}</p>
-            <p className="text-sm text-gray-500">ID: {item.ID_ART}</p>
-          </div>
-          <div className="text-right">
-            <p className="font-medium text-red-600">
-              {item.Quantite} unités restantes
-            </p>
-            <p className="text-sm text-gray-500">{item.Prix}€</p>
-          </div>
-        </div>
-      ))}
+      {items.length > 0
+        ? items.map((item) => (
+            <div
+              key={item.ID_ART}
+              className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-4"
+            >
+              <div>
+                <p className="font-medium">{item.Nom}</p>
+                <p className="text-sm text-gray-500">ID: {item.ID_ART}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-medium text-red-600">
+                  {item.Quantite} unités restantes
+                </p>
+                <p className="text-sm text-gray-500">{item.Prix}€</p>
+              </div>
+            </div>
+          ))
+        : ""}
     </div>
   </div>
 );
@@ -337,11 +356,37 @@ const DashboardPlus = () => {
     monthlySales: null,
     loading: true,
   });
-
-  const [dateRange, setDateRange] = useState({
-    startDate: new Date().getFullYear() + "-01-01",
-    endDate: new Date().toISOString().split("T")[0],
+  const lowStockRef = useRef(null);
+  const scrollToLowStock = () => {
+    lowStockRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+  const [dateRange, setDateRange] = useState(() => {
+    // Try to get saved dates from localStorage, otherwise use default values
+    const savedDates = localStorage.getItem("dashboardDateRange");
+    if (savedDates) {
+      return JSON.parse(savedDates);
+    }
+    return {
+      startDate: new Date().getFullYear() + "-01-01",
+      endDate: new Date().toISOString().split("T")[0],
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem("dashboardDateRange", JSON.stringify(dateRange));
+  }, [dateRange]);
+
+  const handleDateChange = (type, value) => {
+    if (type === "apply") {
+      if (dateRange.startDate > dateRange.endDate) {
+        alert("La date de début doit être antérieure à la date de fin");
+        return;
+      }
+      fetchDashboardData(dateRange.startDate, dateRange.endDate);
+    } else {
+      setDateRange((prev) => ({ ...prev, [type]: value }));
+    }
+  };
 
   const fetchDashboardData = useCallback(async (startDate, endDate) => {
     try {
@@ -366,7 +411,7 @@ const DashboardPlus = () => {
             if (!response.ok)
               throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
-            return [key, key === "productSales" ? data.products : data];
+            return [key, key === "productSales" ? data : data];
           } catch (error) {
             console.error(`Error fetching ${key}:`, error);
             return [key, []];
@@ -388,18 +433,6 @@ const DashboardPlus = () => {
   useEffect(() => {
     fetchDashboardData(dateRange.startDate, dateRange.endDate);
   }, [fetchDashboardData, dateRange.startDate, dateRange.endDate]);
-
-  const handleDateChange = (type, value) => {
-    if (type === "apply") {
-      if (dateRange.startDate > dateRange.endDate) {
-        alert("La date de début doit être antérieure à la date de fin");
-        return;
-      }
-      fetchDashboardData(dateRange.startDate, dateRange.endDate);
-    } else {
-      setDateRange((prev) => ({ ...prev, [type]: value }));
-    }
-  };
 
   if (dashboardData.loading) {
     return (
@@ -440,11 +473,10 @@ const DashboardPlus = () => {
             icon={<DollarSign className="w-6 h-6" />}
             // trend={calculateTrend(revenueStats.current, revenueStats.previous)}
           />
+          {console.log(productSales)}
           <StatCard
             title="Commandes Totales"
-            value={
-              monthlySales?.summary?.total_annual_orders?.toString() || "0"
-            }
+            value={productSales?.summary?.total_orders || "0"}
             icon={<ShoppingCart className="w-6 h-6" />}
             // trend={calculateTrend(
             //   monthlySales?.summary?.total_annual_orders || 0,
@@ -452,7 +484,7 @@ const DashboardPlus = () => {
             // )}
           />
           <StatCard
-            title="Livriosns"
+            title="Commands livrées"
             value={monthlySales?.summary?.total_items_sold?.toString() || "0%"}
             icon={<Package className="w-6 h-6" />}
             // trend={calculateTrend(
@@ -461,29 +493,32 @@ const DashboardPlus = () => {
             // )}
           />
           <StatCard
-            title="Catégories"
+            title="Catégories produits"
             value={categoryStats.length.toString()}
             icon={<Archive className="w-6 h-6" />}
             trend="Actif"
           />
-          <StatCard
-            title="Stock Faible"
-            value={lowStock.length.toString()}
-            icon={<AlertTriangle className="w-6 h-6" />}
-            trend="Attention"
-            warning
-          />
+          <div onClick={scrollToLowStock} style={{ cursor: "pointer" }}>
+            <StatCard
+              title="Stock Faible"
+              value={lowStock.length}
+              icon={<AlertTriangle className="w-6 h-6 text-red-500" />}
+              warning={true}
+            />
+          </div>
         </div>
 
         <Charts
           categoryStats={categoryStats}
-          productSales={productSales}
+          productSales={productSales.products}
           dateRange={dateRange}
         />
 
         <RecentOrders orders={recentOrders} dateRange={dateRange} />
         <OrdersVisualization commandSales={dashboardData.commandSales} />
-        <LowStockAlert items={lowStock} />
+        <div ref={lowStockRef}>
+          {lowStock.length > 0 ? <LowStockAlert items={lowStock} /> : ""}
+        </div>
       </div>
     </div>
   );
